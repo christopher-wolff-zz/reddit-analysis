@@ -40,7 +40,29 @@ num_serious <- filter(accidents, `Casualty Severity` == "Serious") %>% nrow()
 num_slight <- filter(accidents, `Casualty Severity` == "Slight") %>% nrow()
 ```
 
-We can see that only `r num_fatal` accidents turned out fatal, whereas `r num_serious` were serious and `r num_slight` were only slight.
+We can see that only `r num_fatal` accidents turned out fatal, whereas `r num_serious` were serious and `r num_slight` were only slight. We believe that `Age of Casualty` will be an important predictor variable because younger drivers are known to be more reckless, let's visualize how the ages are distributed using a violin plot.
+
+```{r plot-ages}
+ggplot(accidents, aes(y = `Age of Casualty`, x = `Sex of Casualty`)) +
+  geom_violin() +
+  labs(
+    title = "Age distribution of casualties by gender",
+    subtitle = "for traffic accidents in Leeds, 2014",
+    x = "Sex of casualty",
+    y = "Age of casualty (years)"
+  ) +
+  theme_bw()
+median_age_m <- accidents %>%
+  filter(`Sex of Casualty` == "Male") %>%
+  summarize(median_age = median(`Age of Casualty`)) %>%
+  pull(median_age)
+median_age_f <- accidents %>%
+  filter(`Sex of Casualty` == "Female") %>%
+  summarize(median_age = median(`Age of Casualty`)) %>%
+  pull(median_age)
+```
+
+We can see that a large proportion of people were around 25 years old. Furthermore, we can see that there does not appear to be a significant difference in the distribution of male and female casualty ages. The median age for male casualties was `r median_age_m`, similar to the median age for female casualties, which was `r median_age_f`.
 
 Additional research is necessary, but we think that we can use the `polr` function from the MASS package to build the ordinal logistic regression model.
 
