@@ -20,3 +20,9 @@ Due to the increasing amounts of traffic accidents in recent years, which were c
 ## Section 2. Data analysis plan
 
 ## Section 3. Data
+
+The dataset can be found in the /data folder of this project and is almost identical to the one we downloaded from the source. However, one column did not have a header, so we manually named it "Casual Class Desc". The output of the `glimpse` function for our dataset is shown below.
+
+```{r glimpse}
+glimpse(accidents)
+```
