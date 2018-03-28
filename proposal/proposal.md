@@ -11,7 +11,7 @@ Due to the increasing amounts of traffic accidents in recent years, which were c
 Section 2. Data analysis plan
 -----------------------------
 
-We plan to focus our data analysis on two main components. First, we will build an ordinal logistic regression model that can predict the `Casualty Severity` of an accident as either "Slight", "Serious", or "Fatal" from a set of features. Lastly, we want to test whether the weather conditions impact the severity of an incident.
+We plan to focus our data analysis on two main components. First, we will build an ordinal logistic regression model that can predict the `Casualty Severity` of an accident as either "Slight", "Serious", or "Fatal" from a set of features. Lastly, we want to test whether the lighting conditions impact the severity of an incident.
 
 As mentioned, we want to build an ordinal logistic regression model to predict the dependent variable `Casualty Severity`. Initially, our predictor variables will be `Time (24h)`, `1st Road Class`, `Road Surface`, `Lighting Conditions`, `Sex of Casualty`, `Age of Casualty`, and `Type of Vehicle`, but we may end up discarding some if they do not prove useful. We are not intending to include the location of the accident because we believe that that would require a more complex model. Furthermore, we plan to include an additional precitor, `Season`, which was not part of the original dataset, but can be synthesized from the `Accident Date` variable.
 
@@ -29,8 +29,6 @@ ggplot(accidents, aes(x = `Casualty Severity`)) +
   theme_bw()
 ```
 
-    ## Warning: Ignoring unknown parameters: binwidth, bins, pad
-
 ![](proposal_files/figure-markdown_github/plot-severity-1.png)
 
 ``` r
@@ -39,7 +37,7 @@ num_serious <- filter(accidents, `Casualty Severity` == "Serious") %>% nrow()
 num_slight <- filter(accidents, `Casualty Severity` == "Slight") %>% nrow()
 ```
 
-We can see that only 23 accidents turned out fatal, whereas 313 were serious and 2197 were only slight. Since `Age of Casualty` is one of our predictor variables, let's visualize how this variable is distributed using a violin plot.
+We can see that only 23 accidents turned out fatal, whereas 313 were serious and 2197 were only slight. We believe that `Age of Casualty` will be an important predictor variable because younger drivers are known to be more reckless, let's visualize how the ages are distributed using a violin plot.
 
 ``` r
 ggplot(accidents, aes(y = `Age of Casualty`, x = `Sex of Casualty`)) +
@@ -66,9 +64,11 @@ median_age_f <- accidents %>%
   pull(median_age)
 ```
 
-We can see that a large proportion of people were around 25 years old. Furthermore, we can see that there does not appear to be a significant difference in the distribution of male and female casualty ages. The median age for male casualties was 30, similar to the median age for female casualties, which was 32.
+We can see that a large proportion of people were around 25 years old. Furthermore, we can see that there does not appear to be a significant difference in the distribution of male and female casualty ages. The median age for male casualties was 30, similar to the median age for female casualties, which was 32. We aim to explore the impact of age on accident severity further in our analysis.
 
-Additional research is necessary, but we think that we can use the `polr` function from the MASS package to build the ordinal logistic regression model.
+Additional research is necessary, but we think that we can use the `polr` function from the MASS package to build the ordinal logistic regression model. Using cross validation, we can measure the performance of our model on previously unseen data. This will allow us to evaluate how accurate the model is. We hope that after learning about ordinal logistic regression, we will gain an understanding of what predictor variables are useful in predicting the severity level and which are not. This will hopefully lead us to an answer for our research question.
+
+Finally, we want to test whether lighting conditions significantly impact the severity of incidents. We will assign the five levels of lighting conditions to two categories: "sufficient lighting" and "insufficient lighting". Then, we will conduct a hypothesis test independence. Here, our explanatory variable is the newly created `lighting` variable and the response variable is `Casualty Severity`. It may make sense to group the "serious" and "fatal" severity levels into one, so that we can calculate the difference in proportions of heavy accidents between cases in which there was sufficient lighting and those in which there was not. We can use permutation to randomly assign all incidents to either class of lighting level and compute the difference in proportion of heavy accidents. We do this a large number of times and then observe the fraction of those times in which the difference in proportions was greater than our observed one. We can then compare this fraction to a significance level of 0.05 in order to decide whether to reject the null hypothesis.
 
 Section 3. Data
 ---------------
