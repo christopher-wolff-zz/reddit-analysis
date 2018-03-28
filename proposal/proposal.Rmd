@@ -7,6 +7,8 @@ output: github_document
 
 ## Section 1. Introduction
 
+Due to the increasing amounts of traffic accidents in recent years ([http://fortune.com/2017/02/15/traffic-deadliest-year/](source)) and the negative consequences they hold, for our research project, we want to better understand the possible causes of such car accidents. Specifically, we will try to determine how different factors impact the likelihood and severity of road accidents. We will do so by looking specifically at car accident data for the UK. This data was gathered from data.gov.uk which was specifically published by the Leeds City Council. The dataset contains 16 variables which will be described in our codebook. The variables we are interested in analyzing are time, casualty severity, lighting conditions, and age of driver. 
+
 ## Section 2. Data analysis plan
 
 ## Section 3. Data
