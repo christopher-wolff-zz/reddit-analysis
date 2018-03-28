@@ -5,6 +5,16 @@ date: "March 27, 2018"
 output: github_document
 ---
 
+## Load packages and data
+
+```{r load-packages}
+library(tidyverse)
+```
+
+```{r load-data, message=FALSE}
+accidents <- read_csv("../data/uk-traffic-accidents.csv")
+```
+
 ## Section 1. Introduction
 
 ## Section 2. Data analysis plan
