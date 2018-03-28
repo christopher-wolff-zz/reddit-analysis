@@ -11,6 +11,38 @@ Due to the increasing amounts of traffic accidents in recent years, which were c
 Section 2. Data analysis plan
 -----------------------------
 
+We plan to focus our data analysis on two main components. First, we will build an ordinal logistic regression model that can predict the `Casualty Severity` of an accident as either "Slight", "Serious", or "Fatal" from a set of features. Lastly, we want to test whether the weather conditions impact the severity of an incident.
+
+As mentioned, we want to build an ordinal logistic regression model to predict the dependent variable `Casualty Severity`. Initially, our predictor variables will be `Time (24h)`, `1st Road Class`, `Road Surface`, `Lighting Conditions`, `Sex of Casualty`, `Age of Casualty`, and `Type of Vehicle`, but we may end up discarding some if they do not prove useful. We are not intending to include the location of the accident because we believe that that would require a more complex model. Furthermore, we plan to include an additional precitor, `Season`, which was not part of the original dataset, but can be synthesized from the `Accident Date` variable.
+
+Let's take a quick look at the distribution of the casualty severities.
+
+``` r
+ggplot(accidents, aes(x = `Casualty Severity`)) +
+  geom_histogram(stat = "count") +
+  labs(
+    title = "Distribution of casualty severities",
+    subtitle = "for traffic accidents in Leeds, 2014",
+    x = "Casualty severity",
+    y = "Count"
+  ) +
+  theme_bw()
+```
+
+    ## Warning: Ignoring unknown parameters: binwidth, bins, pad
+
+![](proposal_files/figure-markdown_github/plot-severity-1.png)
+
+``` r
+num_fatal <- filter(accidents, `Casualty Severity` == "Fatal") %>% nrow()
+num_serious <- filter(accidents, `Casualty Severity` == "Serious") %>% nrow()
+num_slight <- filter(accidents, `Casualty Severity` == "Slight") %>% nrow()
+```
+
+We can see that only 23 accidents turned out fatal, whereas 313 were serious and 2197 were only slight.
+
+Additional research is necessary, but we think that we can use the `polr` function from the MASS package to build the ordinal logistic regression model.
+
 Section 3. Data
 ---------------
 
