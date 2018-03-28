@@ -1,7 +1,7 @@
 ---
-title: "PROJECT TITLE"
-author: "NAME HERE"
-date: "TODAY'S DATE"
+title: "Road Traffic Accidents in the UK"
+author: "InterstellR"
+date: "March 27, 2018"
 output: github_document
 ---
 
