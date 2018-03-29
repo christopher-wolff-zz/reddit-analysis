@@ -1,10 +1,25 @@
 # data
 
-dimensions of dataset
+dimensions of dataset: our data set contains 2534 rows and 16 columns. 
 
-variable name: description (range of values)
-variable name: description (range of values)
-variable name: description (range of values)
+variable: description: type: range of values
+Reference Number: unique car accident ID
+Grid Ref-Easting: Eastern Coordinate (in Meters)
+Grid Ref-Northing: Northern Coordinate (in Meters)
+Number of Vehicles: Amount of vehicles affected by accident: Numeric: 1-8
+Accident Date: Date of Accident: Continuous: days between Jan - Dec 2014
+Time: Time of Accident: Continuous: anytime in a 24 hr day
+1st Road Class: Type of Road: Categorical: A, B, C, Motorway
+Road Surface: Physical Road Condition: Categorical: Dry, Frost/Ice, Wet/Damp, Snow
+Lighting conditions: the type of brightness outside: Categorical: Daylight, Darkness
+Weather coniditions: the characteristics of the weather: Categorical: Fine without high winds, Raining without high winds, Snowing without high winds, Fine with high winds, Raining with high winds, Snowing with high winds, Fog or mist – if hazard 
+Casualty Class: what type on individuals were affected by the accident: Categorical: Driver/Rider(1), Vehicle/pillion passeneger(2), Pedestrian (3)
+Casualty Severity: how harmful the accident was to the members involved: Fatal, Serious, Slight
+Sex of Casualty: the sex of the person harmed: Categorical: Male, Female
+Age of Casualty: The age of the person harmed: Numeric: 1-97
+Type of Vehicle: The type of vehicle which caused the accident: Bus/Coach,Pedal cycle, M/cycle 50cc and under, Motorcycle over 50cc and up to 125cc,	Motorcycle over 125cc and up to 500cc,	Motorcycle over 500cc, Taxi/Private hire car, Car, Ridden Hourse, Mobility Scooter, Agriculture Vehicle, 	Minibus (8 – 16 passenger seats), Tram/Light, Goods vehicle 3.5 tonnes mgw and under, Goods vehicle over 3.5 tonnes and under 7.5 tonnes mgw, Goods vehicle 7.5 tonnes mgw and over
+ 
+
 
 1st Road Class	1st Road Class Desc
 1	Motorway
