@@ -2,8 +2,7 @@
 
 Dimensions, our data set contains 2534 rows and 16 columns. 
 
-Variable: description, type, range of values
-============================================
+Variable: description, type, (range of values)
 Reference Number: unique car accident ID
 Grid Ref-Easting: Eastern Coordinate (in Meters)
 Grid Ref-Northing: Northern Coordinate (in Meters)
