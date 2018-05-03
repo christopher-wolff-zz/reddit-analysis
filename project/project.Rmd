@@ -1,5 +1,5 @@
 ---
-title: "Analyzing Traffic Accidents in California"
+title: "What makes a popular Reddit post?"
 author: "InterstellR"
 date: "May 2, 2018"
 output: github_document
@@ -9,6 +9,6 @@ output: github_document
 knitr::opts_chunk$set(echo = FALSE)
 ```
 
-Your project goes here! Before you submit, make sure your chunks are turned off with `echo = FALSE`. 
+## Introduction
 
-You can add sections as you see fit. Make sure you have a section called Introduction at the beginning and a section called Conclusion at the end. The rest is up to you!
+## Conclusion
