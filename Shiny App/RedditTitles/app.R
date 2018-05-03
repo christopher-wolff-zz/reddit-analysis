@@ -5,9 +5,12 @@
 # Find out more about building applications with Shiny here:
 #
 #    http://shiny.rstudio.com/
-#
 
+#load packages
 library(shiny)
+library(tools)
+library(DT)
+library(tidyverse)
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
