@@ -37,9 +37,11 @@ The data set is comprised of Reddit posts from December 2017, since it was the l
 
 TODO: Describe dataset and variables
 
+
+
 ### Research Question
 
-TODO: Explain research question and motivation
+Coincidentally, our team is made up of avid Reddit fans. All three of us are constantly checking it for interesting, insightful, and funny posts. Given that Reddit recieves thousands of posts per day and the little time in the day we have to check Reddit, we all usually only check the "popular" feed. So, it got us thinking that we should learn more about the site we use pretty frequently. Specifically, we want to analyze what makes a Reddit post popular.
 
 ## Cleaning
 
@@ -66,7 +68,7 @@ To check whether our conversion is correct, we can look at the range of the new 
 
 ## Exploring Popular Subreddits
 
-As infrequent Reddit users, we do not know much about the various subreddits yet. Hence, we want to start by finding out what the most popular ones are and gain insights into what the posts in each one are about. As a measure of a subreddit's popularity, we decide to use the cumulative score of all of its posts. The plot below shows the nine subreddits with the highest resulting totals.
+As stricty popular-feed Reddit users, we do not know much about the various subreddits yet. Hence, we want to start by finding out what the most popular ones are and gain insights into what the posts in each one are about. As a measure of a subreddit's popularity, we decide to use the cumulative score of all of its posts. The plot below shows the nine subreddits with the highest resulting totals.
 
 ```{r active-subreddits}
 popular_subs <- posts %>%
