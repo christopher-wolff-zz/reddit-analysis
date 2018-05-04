@@ -22,7 +22,7 @@ library(scales)
 
 ```{r load-data, echo=FALSE, message=FALSE}
 # This may take a while
-posts <- read_csv("../data/reddit-posts.csv")
+posts <- read_csv("../data/reddit-posts-christmas.csv")
 ```
 
 ## Introduction
@@ -35,8 +35,7 @@ TODO: Expand introduction
 
 The data set is comprised of Reddit posts from December 2017, since it was the latest data set we could find and wanted to keep up with the most recent trends. Also,  it will be interesting to explore themes related to Christmas. We retrieved it from the Google BigQuery API. The data set contains `r ncol(posts)` variables and `r nrow(posts)` observations. 
 
-TODO: Describe dataset and variables
-
+Our dataset is made up of `r ncol(posts)` variables but for this project, we will only be looking at these variables: `subreddit` (categorical, name of the subreddit the post belongs to), `num_comments` (numerical, the number of comments on the post),`score` (numerical, popularity score of post), `ups` (numerical, amount of up votes the post recieved), `downs` (numerical, amount of down votes the post recieved), `title` (categorical, the title of the post), `selftext` (categorical, the text body on the post), `gilded` (numerical, amount of gold reddit donations from other users), `over_18` ( categorical, true or fale if post is only appropriate for users over the age of 18). The rest of the descriptions for the other variables can be found in our data folder. 
 
 
 ### Research Question
