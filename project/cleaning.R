@@ -32,6 +32,7 @@ rm(
   posts_12, posts_13, posts_14, posts_15, posts_16, posts_17
 )
 
+
 posts <- mutate(
   posts,
   created_date = as.POSIXct(created_utc, origin = "1970-01-01") + 5 * 60 * 60,
