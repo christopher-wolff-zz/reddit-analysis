@@ -28,7 +28,7 @@ posts <- read_csv('../data/reddit-posts.csv')
 
 ### Data Set
 
-The data set is comprised of Reddit posts from December 2017, since it was the latest data set we could find and wanted to keep up with the most recent trends. Also,  it will be interesting to explore themes related to Christmas. We retrieved it from the google BigQuery API. The data set contains `r ncol(posts)` variables and `r nrows(posts)` observations. 
+The data set is comprised of Reddit posts from December 2017, since it was the latest data set we could find and wanted to keep up with the most recent trends. Also,  it will be interesting to explore themes related to Christmas. We retrieved it from the Google BigQuery API. The data set contains `r ncol(posts)` variables and `r nrow(posts)` observations. 
 
 ### Research Question
 
@@ -53,7 +53,12 @@ ggplot(popular_subs, aes(x = reorder(subreddit, total_score), y = total_score * 
     x = '',
     y = 'Cumulative score of posts'
   ) +
-  scale_y_continuous(label = unit_format('M'), breaks = seq(0, 250, length = 6)) +
+  scale_y_continuous(
+    label = unit_format('M'),
+    breaks = seq(0, 25, length = 6),
+    expand = c(0, 0)
+  ) +
+  scale_x_discrete(expand = c(0, 0)) +
   coord_flip() +
   theme_minimal()
 ```
@@ -61,16 +66,18 @@ ggplot(popular_subs, aes(x = reorder(subreddit, total_score), y = total_score * 
 We find that the nine most popular subreddits in descending order are `The_Donald`, `funny`, `politics`, `aww`, `pics`, `gaming`, `gifs`, `todayilearned`, and `me_irl`. We may be able to intuit what most of these subreddits are about from their name alone, but we wanted to know more about the content and central topics in each of them. Therefore, we decided to analyze the most frequent terms in each of these subreddits with the help of the `tidytext` package. We want to focus on the text contained in the title of the posts since it is the first thing that is visible to the users. Furthermore, we decided to filter out stop words such as "the" and "a" because they naturally appear very frequently and do not convey much about the content of any one particular subreddit.
 
 ```{r tf-analysis}
+# count most frequent words for each subreddit
 tidy_titles <- posts %>%
   filter(subreddit %in% popular_subs$subreddit) %>%
   unnest_tokens(word, title) %>%
-  anti_join(stop_words) %>%
+  anti_join(stop_words, by = 'word') %>%
   count(subreddit, word, sort = TRUE) %>%
   group_by(subreddit) %>%
   top_n(10, wt = n) %>%
   ungroup() %>%
   arrange(subreddit, n) %>%
   mutate(order = row_number())
+# plot results
 ggplot(tidy_titles, aes(x = order, y = n, fill = subreddit)) +
   geom_col(show.legend = FALSE) +
   facet_wrap(~subreddit, scales = 'free') +
@@ -85,8 +92,10 @@ ggplot(tidy_titles, aes(x = order, y = n, fill = subreddit)) +
     labels = tidy_titles$word,
     expand = c(0, 0)
   ) +
+  scale_y_continuous(expand = c(0, 0)) +
   coord_flip() +
-  theme_minimal()
+  theme_minimal() +
+  theme(panel.grid.major.y = element_blank())
 ```
 
 TODO: Discuss results for this visualization
