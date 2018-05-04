@@ -40,7 +40,7 @@ TODO: Explain research question and motivation
 
 ## Cleaning
 
-The dataset we acquired is mostly cleaned; however, there is one thing we need to clean up before we began our analysis. The variable `created_utc` gives the date that the post was created as the difference in milliseconds from January 1st, 1970. This quantity is not very easy to read or interpret, so we convert it to a combination of day, hour, and minute. We do not need to store the month and year since these values are the same for all entries in the dataset.
+The dataset we acquired is mostly clean; however, there is one thing we need to clean up before we began our analysis. The variable `created_utc` gives the date that the post was created as the difference in milliseconds from January 1st, 1970. This quantity is not very easy to read or interpret, so we convert it to a combination of day, hour, and minute. We do not need to store the month and year since these values are the same for all entries in the dataset.
 
 ```{r clean}
 posts <- mutate(
@@ -61,9 +61,9 @@ posts <- mutate(
 
 To check whether our conversion is correct, we can look at the range of the new date variable. We see that the first post in the dataset was on `r min(posts$retrieved_date)` and the latest one was on `r max(posts$retrieved_date)`. Since this range is exactly the month of December 2017, we can be confident that the conversion was successful.
 
-## Exploratory Analysis
+## Exploration
 
-As infrequent Reddit users, we do not know much about the various subreddits. Hence, we want to start by finding out what the most popular ones are and gain insights into what the posts in each one are about. As a measure of a subreddit's popularity, we decide to use the cumulative score of all of its posts. The plot below shows the ten subreddits with the highest resulting totals.
+As infrequent Reddit users, we do not know much about the various subreddits yet. Hence, we want to start by finding out what the most popular ones are and gain insights into what the posts in each one are about. As a measure of a subreddit's popularity, we decide to use the cumulative score of all of its posts. The plot below shows the nine subreddits with the highest resulting totals.
 
 ```{r active-subreddits}
 popular_subs <- posts %>%
@@ -132,5 +132,9 @@ ggplot(tidy_titles, aes(x = order, y = n, fill = subreddit)) +
 ```
 
 TODO: Discuss results for this visualization
+
+## Analysis
+
+## Modeling
 
 ## Conclusion
