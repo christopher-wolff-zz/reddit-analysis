@@ -11,8 +11,6 @@ knitr::opts_chunk$set(echo = FALSE)
 options(digits = 2)
 ```
 
-## Load packages and data
-
 ```{r load-packages, echo=FALSE, message=FALSE}
 library(chunked)
 library(infer)
@@ -107,14 +105,14 @@ tidy_titles <- tidy_titles %>%
   left_join(popular_subs, by = "subreddit") %>%
   mutate(subreddit = reorder(subreddit, desc(total_score)))
 # plot results
-ggplot(tidy_titles, aes(x = order, y = n / 1e3, fill = subreddit)) +
+ggplot(tidy_titles, aes(x = order, y = n, fill = subreddit)) +
   geom_col(show.legend = FALSE) +
   facet_wrap(~subreddit, scales = "free") +
   labs(
     title = "Most frequent words within various subreddits",
     subtitle = "in December 2017",
     x = "",
-    y = "Count (thousands)"
+    y = "Count"
   ) +
   scale_x_continuous(
     breaks = tidy_titles$order,
@@ -193,7 +191,7 @@ It appears that the sentiment analysis results match our intuition -- the positi
 Now, we can finally test our hypothesis. The null hypothesis and the alternative hypothesis are as follows.  
 
 H0: A post's score is independent of the title's sentiment polarity.  
-HA: A post's score depends on the title's sentiment polarity.  
+HA: Negative posts have a higher mean score than positive posts.  
 
 For this analysis, we will ignore posts with neutral sentiment and only focus on those with positive or negative sentiment polarity. Before we start, we need to verify whether all conditions for valid simulation based inference are met. Our "population" is the set of all Reddit posts in December 2017 and has a size of 10,567,492. Our sample is taken at random without replacement and has a size of 1,000,000. Since the sample size is less than 10% of the population size, the independence condition is therefore met. Additionally, we require more than 30 samples, which we also have.
 
@@ -240,9 +238,11 @@ ggplot(null_dist, aes(x = stat)) +
 ```{r calc-p}
 p_value <- null_dist %>%
   filter(stat >= diff_mean_score) %>%
-  summarize(p = 2 * n() / nrow(null_dist)) %>%
+  summarize(p = n() / nrow(null_dist)) %>%
   pull(p)
 ```
+
+Using a one-sided hypothesis test, we find a p-value of `r p_value`. Using a significance level of 5%, we can infer that since our p-value is less than the significance level, we can reject the null hypothesis and conclude that negative posts do indeed have a higher average mean score than positive posts.
 
 ## Cats vs. Dogs
 
