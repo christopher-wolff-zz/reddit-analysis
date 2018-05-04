@@ -8,12 +8,14 @@ output: github_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
+options(digits = 2)
 ```
 
 ## Load packages and data
 
 ```{r load-packages, echo=FALSE, message=FALSE}
 library(chunked)
+library(infer)
 library(lubridate)
 library(tidytext)
 library(tidyverse)
@@ -188,17 +190,62 @@ posts %>%
 
 It appears that the sentiment analysis results match our intuition -- the positively classified titles talk about "best drafts ever" and "obvious benefits," and the negatively classified titles talk about a technical problem with some video game and fears.
 
+Now, we can finally test our hypothesis. The null hypothesis and the alternative hypothesis are as follows.  
+
+H0: A post's score is independent of the title's sentiment polarity.  
+HA: A post's score depends on the title's sentiment polarity.  
+
+For this analysis, we will ignore posts with neutral sentiment and only focus on those with positive or negative sentiment polarity. Before we start, we need to verify whether all conditions for valid simulation based inference are met. Our "population" is the set of all Reddit posts in December 2017 and has a size of 10,567,492. Our sample is taken at random without replacement and has a size of 1,000,000. Since the sample size is less than 10% of the population size, the independence condition is therefore met. Additionally, we require more than 30 samples, which we also have.
+
+First, we calculate the observed difference in mean score between posts with negative and positive `sent_class`.
+
+```{r diff-mean-score}
+mean_score_pos <- posts %>%
+  filter(sent_class == "pos") %>%
+  summarize(mean_score = mean(score)) %>%
+  pull(mean_score)
+mean_score_neg <- posts %>%
+  filter(sent_class == "neg") %>%
+  summarize(mean_score = mean(score)) %>%
+  pull(mean_score)
+diff_mean_score <- mean_score_neg - mean_score_pos
+```
+
+We find that, in our sample, negative posts have an average score which is `r diff_mean_score` higher than positive posts. Next, let's figure out whether this difference could be due to chance using bootstrapping with permutation.
+
+```{r null-dist}
+null_dist <- posts %>%
+  filter(sent_class %in% c("pos", "neg")) %>%
+  specify(score ~ sent_class) %>%
+  hypothesize(null = "independence") %>% 
+  generate(reps = 1000, type = "permute") %>% 
+  calculate(stat = "diff in means", order = c("neg", "pos"))
+```
+
+The resulting null distribution of the differences in means in shown below.
+
+```{r plot-null-dist}
+ggplot(null_dist, aes(x = stat)) + 
+  geom_density() +
+  labs(
+    title = "Null distribution of difference in mean scores",
+    subtitle = "between posts with negative and positive sentiments",
+    x = "Score difference",
+    y = "Density"
+  ) +
+  geom_vline(xintercept = diff_mean_score, color = "red") +
+  theme_minimal()
+```
+
 ## Cats vs. Dogs
 
 TODO: Hypothesis test whether dogs or cats are more popular
 
 ## Modeling Popularity
 
-```{r lm-popularityh}
-full_model <- lm(score ~ num_comments + ups + downs + gilded + over
-                        age + cls_perc_eval + cls_did_eval + 
-                         cls_students + cls_level + cls_profs + 
-                         cls_credits + bty_avg, data = posts)
+```{r lm-popularity}
+
+```
 
 TODO: Density plot and summary statistics for popularity
 TODO: Build linear and bayesian model and compare results
