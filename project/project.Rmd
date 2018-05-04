@@ -13,6 +13,7 @@ knitr::opts_chunk$set(echo = FALSE)
 ## Load packages and data
 
 ```{r load-packages, echo=FALSE, message=FALSE}
+library(chunked)
 library(lubridate)
 library(tidytext)
 library(tidyverse)
@@ -21,7 +22,7 @@ library(scales)
 
 ```{r load-data, echo=FALSE, message=FALSE}
 # This may take a while
-posts <- read_csv('../data/reddit-posts.csv')
+posts <- read_csv("../data/reddit-posts.csv")
 ```
 
 ## Introduction
@@ -79,13 +80,13 @@ popular_subs <- posts %>%
 ggplot(popular_subs, aes(x = reorder(subreddit, total_score), y = total_score / 1e6)) +
   geom_col() +
   labs(
-    title = 'Most popular subreddits',
-    subtitle = 'in December 2017',
-    x = '',
-    y = 'Cumulative score of all posts'
+    title = "Most popular subreddits",
+    subtitle = "in December 2017",
+    x = "",
+    y = "Cumulative score of all posts"
   ) +
   scale_y_continuous(
-    label = unit_format('M'),
+    label = unit_format("M"),
     breaks = seq(0, 25, length = 6),
     expand = c(0, 0)
   ) +
@@ -100,7 +101,7 @@ We find that the nine most popular subreddits in descending order are `The_Donal
 tidy_titles <- posts %>%
   filter(subreddit %in% popular_subs$subreddit) %>%
   unnest_tokens(word, title) %>%
-  anti_join(stop_words, by = 'word') %>%
+  anti_join(stop_words, by = "word") %>%
   count(subreddit, word, sort = TRUE) %>%
   group_by(subreddit) %>%
   top_n(10, wt = n) %>%
@@ -109,17 +110,17 @@ tidy_titles <- posts %>%
   mutate(order = row_number())
 # reorder subreddit variable by popularity
 tidy_titles <- tidy_titles %>%
-  left_join(popular_subs, by = 'subreddit') %>%
+  left_join(popular_subs, by = "subreddit") %>%
   mutate(subreddit = reorder(subreddit, desc(total_score)))
 # plot results
 ggplot(tidy_titles, aes(x = order, y = n / 1e3, fill = subreddit)) +
   geom_col(show.legend = FALSE) +
-  facet_wrap(~subreddit, scales = 'free') +
+  facet_wrap(~subreddit, scales = "free") +
   labs(
-    title = 'Most frequent words within various subreddits',
-    subtitle = 'in December 2017',
-    x = '',
-    y = 'Count (thousands)'
+    title = "Most frequent words within various subreddits",
+    subtitle = "in December 2017",
+    x = "",
+    y = "Count (thousands)"
   ) +
   scale_x_continuous(
     breaks = tidy_titles$order,
@@ -138,15 +139,33 @@ TODO: Discuss results for this visualization
 
 ## Sentiment Analysis
 
-One of the major questions we want to explore is whether positive or negative posts are more likely to become popular. Our hypothesis is that negative posts are generally more popular, as psychologists claim that humans have an innate "negativity bias" which draws them toward bad news moreso than good ones [@ito]. To test this belief, we need a way to determine the sentiment polarity of each post, i.e. how positive or negative it is.
+One of the major questions we want to explore is whether positive or negative posts are more popular. Our hypothesis is that negative posts are generally more popular, as psychologists claim that humans have an innate "negativity bias" which draws them toward bad news moreso than good ones [@ito]. To test this belief, we need a way to determine the sentiment polarity of each post, i.e. how positive or negative it is. We will use the `afinn` sentiment lexicon, which provides a list of 2476 words, each associated with a score between -3 and +3. Negative words are given a negative score, and positive words are given a positive score. The higher in magnitude the score is, the more extreme the negativity or positivity of the word. For example, the word "death" has a score of -3 whereas the word "love" has a score of +3. In order to determine the overall sentiment of a post, we will simply add up the sentiments of the words contained in it. Note that due to the size of the dataframe, we cannot fully unnest is because that would not fit into memory. Hence, we process the data chunk wise.
 
-## Cats or Dogs?
+```{r sentiment-scores}
+sents <- get_sentiments("afinn")
+tidy_posts <- tibble()
+posts %>%
+  head(100) %>%
+  read_chunkwise(chunk_size = 1e4) %>%
+  unnest_tokens(word, title) %>%
+  inner_join(sents, suffix = c("", "_sent")) %>%
+  group_by(id) %>%
+  summarize(sentiment = sum(score_sent)) %>%
+  write_chunkwise(tidy_posts)
+```
+
+## Cats vs. Dogs
 
 TODO: Hypothesis test whether dogs or cats are more popular
 
 ## Modeling Popularity
 
+TODO: Density plot and summary statistics for popularity
 TODO: Build linear and bayesian model and compare results
+
+## Discussion
+
+TODO: Discuss results
 
 ## Conclusion
 
