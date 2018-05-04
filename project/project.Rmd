@@ -26,15 +26,44 @@ posts <- read_csv('../data/reddit-posts.csv')
 
 "Reddit is an American social news aggregation, web content rating, and discussion website" (from [Wikipedia](https://en.wikipedia.org/wiki/Reddit)). People who are members of Reddit upload their posts and other people vote and comment on said posts, the posts with the most likes appear more towards the top. They are divided by thematic categories called subreddits, as well as overall categories of top posts, new posts, controversial posts, among others.
 
+TODO: Expand intro
+
 ### Data Set
 
 The data set is comprised of Reddit posts from December 2017, since it was the latest data set we could find and wanted to keep up with the most recent trends. Also,  it will be interesting to explore themes related to Christmas. We retrieved it from the Google BigQuery API. The data set contains `r ncol(posts)` variables and `r nrow(posts)` observations. 
 
+TODO: Describe dataset and variables
+
 ### Research Question
+
+TODO: Explain research question and motivation
+
+## Cleaning
+
+The dataset we acquired is mostly cleaned; however, there is one thing we need to clean up before we began our analysis. The variable `created_utc` gives the date that the post was created as the difference in milliseconds from January 1st, 1970. This quantity is not very easy to read or interpret, so we convert it to a combination of day, hour, and minute. We do not need to store the month and year since these values are the same for all entries in the dataset.
+
+```{r clean}
+posts <- mutate(
+  posts,
+  created_date = as.POSIXct(created_utc, origin = "1970-01-01") + 5 * 60 * 60,
+  created_day = day(created_date),
+  created_hour = hour(created_date),
+  created_minute = minute(created_date)
+)
+#posts <- mutate(
+#  posts,
+#  retrieved_date = as.POSIXct(retrieved_on, origin = "1970-01-01") + 5 * 60 * 60,
+#  retrieved_day = day(retrieved_date),
+#  retrieved_hour = hour(retrieved_date),
+#  retrieved_minute = minute(retrieved_date)
+#)
+```
+
+To check whether our conversion is correct, we can look at the range of the new date variable. We see that the first post in the dataset was on `r min(posts$retrieved_date)` and the latest one was on `r max(posts$retrieved_date)`. Since this range is exactly the month of December 2017, we can be confident that the conversion was successful.
 
 ## Exploratory Analysis
 
-As infrequent Reddit users, we did not know much about the various subreddits. Hence, we wanted to start by finding out what the most popular ones are and gain insights into what the posts in each one are about. As a measure of a subreddit's popularity, we decided to use the cumulative score of all of its posts. The plot below shows the ten subreddits with the highest resulting totals.
+As infrequent Reddit users, we do not know much about the various subreddits. Hence, we want to start by finding out what the most popular ones are and gain insights into what the posts in each one are about. As a measure of a subreddit's popularity, we decide to use the cumulative score of all of its posts. The plot below shows the ten subreddits with the highest resulting totals.
 
 ```{r active-subreddits}
 popular_subs <- posts %>%
@@ -77,6 +106,10 @@ tidy_titles <- posts %>%
   ungroup() %>%
   arrange(subreddit, n) %>%
   mutate(order = row_number())
+# reorder subreddit variable by popularity
+tidy_titles <- tidy_titles %>%
+  left_join(popular_subs, by = 'subreddit') %>%
+  mutate(subreddit = reorder(subreddit, desc(total_score)))
 # plot results
 ggplot(tidy_titles, aes(x = order, y = n, fill = subreddit)) +
   geom_col(show.legend = FALSE) +
