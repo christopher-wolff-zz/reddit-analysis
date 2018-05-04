@@ -194,6 +194,12 @@ TODO: Hypothesis test whether dogs or cats are more popular
 
 ## Modeling Popularity
 
+```{r lm-popularityh}
+full_model <- lm(score ~ num_comments + ups + downs + gilded + over
+                        age + cls_perc_eval + cls_did_eval + 
+                         cls_students + cls_level + cls_profs + 
+                         cls_credits + bty_avg, data = posts)
+
 TODO: Density plot and summary statistics for popularity
 TODO: Build linear and bayesian model and compare results
 
