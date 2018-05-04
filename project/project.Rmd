@@ -13,11 +13,12 @@ knitr::opts_chunk$set(echo = FALSE)
 
 ```{r load-packages, echo=FALSE, message=FALSE}
 library(tidyverse)
+library(scales)
 ```
 
 ```{r load-data, echo=FALSE, message=FALSE}
-# Warning: this may take a while
-# posts <- read_csv('../data/reddit-posts.csv')
+# This may take a while
+posts <- read_csv('../data/reddit-posts.csv')
 ```
 
 ## Introduction
@@ -26,12 +27,36 @@ library(tidyverse)
 
 ### Data Set
 
-The data set is comprised of Reddit posts from December 2017, since it was the latest data set we could find and wanted to keep up with the most recent trends. Also,  it will be interesting to explore themes related to Christmas. We retrieved it from the google BigQuerry API. The data set contains .. variables and .. observations. 
+The data set is comprised of Reddit posts from December 2017, since it was the latest data set we could find and wanted to keep up with the most recent trends. Also,  it will be interesting to explore themes related to Christmas. We retrieved it from the google BigQuerry API. The data set contains `r ncols(posts)` variables and `r nrows(posts)` observations. 
 
 ### Research Question
 
 ## Exploratory Analysis
 
-As infrequent Reddit users, we did not know much about the various Subreddits. Hence, we wanted to start by finding out what the most popular ones are and gain insights into what the posts in each one are about.
+As infrequent Reddit users, we did not know much about the various subreddits. Hence, we wanted to start by finding out what the most popular ones are and gain insights into what the posts in each one are about. As a measure of a subreddit's popularity, we decided to use the cumulative score of all of its posts.
+
+```{r active-subreddits}
+popular_subs <- posts %>%
+  group_by(subreddit) %>%
+  summarize(
+    num_posts = n(),
+    total_score = sum(score)
+  ) %>%
+  arrange(desc(total_score)) %>%
+  head(10)
+ggplot(popular_subs, aes(x = reorder(subreddit, total_score), y = total_score * 10e-6)) +
+  geom_bar(stat = 'identity') +
+  labs(
+    title = 'Most popular subreddits',
+    subtitle = 'in December 2018',
+    x = '',
+    y = 'Cumulative score of posts'
+  ) +
+  scale_y_continuous(label = unit_format('M'), breaks = seq(0, 250, length = 6)) +
+  coord_flip() +
+  theme_bw()
+```
+
+We find that the ten most popular subreddits in descending order are `The_Donald`, `funny`, `politics`, `aww`, `pics`, `gaming`, `gifs`, `todayilearned`, `me_irl`, `worldnews`.
 
 ## Conclusion
