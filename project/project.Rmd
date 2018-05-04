@@ -53,13 +53,6 @@ posts <- mutate(
   created_hour = hour(created_date),
   created_minute = minute(created_date)
 )
-#posts <- mutate(
-#  posts,
-#  retrieved_date = as.POSIXct(retrieved_on, origin = "1970-01-01") + 5 * 60 * 60,
-#  retrieved_day = day(retrieved_date),
-#  retrieved_hour = hour(retrieved_date),
-#  retrieved_minute = minute(retrieved_date)
-#)
 ```
 
 To check whether our conversion is correct, we can look at the range of the new date variable. We see that the first post in the dataset was on `r min(posts$created_date)` and the latest one was on `r max(posts$created_date)`. Since this range is exactly the month of December 2017, we can be confident that the conversion was successful.
