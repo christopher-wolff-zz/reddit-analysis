@@ -138,11 +138,15 @@ TODO: Discuss results for this visualization
 
 ## Sentiment Analysis
 
-One of the major questions we want to explore is whether positive or negative posts are more likely to become popular. Our hypothesis is that negative posts are generally more popular, as psychologists claim that humans have an innate "negativity bias" which draws them toward bad news moreso than good ones [@ito]. To test this belief, we need to start by 
+One of the major questions we want to explore is whether positive or negative posts are more likely to become popular. Our hypothesis is that negative posts are generally more popular, as psychologists claim that humans have an innate "negativity bias" which draws them toward bad news moreso than good ones [@ito]. To test this belief, we need a way to determine the sentiment polarity of each post, i.e. how positive or negative it is.
 
 ## Cats or Dogs?
 
+TODO: Hypothesis test whether dogs or cats are more popular
+
 ## Modeling Popularity
+
+TODO: Build linear and bayesian model and compare results
 
 ## Conclusion
 
