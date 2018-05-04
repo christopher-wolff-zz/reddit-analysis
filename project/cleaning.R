@@ -32,27 +32,4 @@ rm(
   posts_12, posts_13, posts_14, posts_15, posts_16, posts_17
 )
 
-
-posts <- mutate(
-  posts,
-  created_date = as.POSIXct(created_utc, origin = "1970-01-01") + 5 * 60 * 60,
-  created_month = month(created_date),
-  created_day = day(created_date),
-  created_hour = hour(created_date),
-  created_minute = minute(created_date),
-  retrieved_date = as.POSIXct(retrieved_on, origin = "1970-01-01") + 5 * 60 * 60,
-  retrieved_month = month(retrieved_date),
-  retrieved_day = day(retrieved_date),
-  retrieved_hour = hour(retrieved_date),
-  retrieved_minute = minute(retrieved_date)
-)
-
 write_csv(posts, 'data/reddit-posts.csv')
-
-christmas_posts <- filter(
-  posts,
-  created_month == 12,
-  created_day == 24 | created_day == 25
-)
-
-write_csv(christmas_posts, 'data/reddit-posts-christmas.csv')
