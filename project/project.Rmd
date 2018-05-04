@@ -252,6 +252,7 @@ TODO: Hypothesis test whether dogs or cats are more popular
 
 ```{r lm-popularity}
 
+!is.na(hide_score)
 ```
 
 TODO: Density plot and summary statistics for popularity
