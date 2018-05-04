@@ -53,6 +53,13 @@ posts <- mutate(
   created_hour = hour(created_date),
   created_minute = minute(created_date)
 )
+#posts <- mutate(
+#  posts,
+#  retrieved_date = as.POSIXct(retrieved_on, origin = "1970-01-01") + 5 * 60 * 60,
+#  retrieved_day = day(retrieved_date),
+#  retrieved_hour = hour(retrieved_date),
+#  retrieved_minute = minute(retrieved_date)
+#)
 ```
 
 To check whether our conversion is correct, we can look at the range of the new date variable. We see that the first post in the dataset was on `r min(posts$created_date)` and the latest one was on `r max(posts$created_date)`. Since this range is exactly the month of December 2017, we can be confident that the conversion was successful.
@@ -194,12 +201,20 @@ TODO: Hypothesis test whether dogs or cats are more popular
 
 ## Modeling Popularity
 
-```{r lm-popularityh}
-full_model <- lm(score ~ num_comments + ups + downs + gilded + over
-                        age + cls_perc_eval + cls_did_eval + 
-                         cls_students + cls_level + cls_profs + 
-                         cls_credits + bty_avg, data = posts)
+```{r clean_nas}
+posts_clean <- posts%>%
+  filter(!is.na(gilded), !is.na(over_18), !is.na(hide_score), !is.na(is_self), hide_score == 'false')
+```
+ 
+```{r lm-popularity}
+full_model <- lm(score ~ num_comments + gilded + over_18 + is_self, data = posts_clean)
 
+selected_model <- step(full_model, direction = "backward")
+```
+
+```{r tidy-lm}
+tidy(selected_model) %>% select(term, estimate)
+```
 TODO: Density plot and summary statistics for popularity
 TODO: Build linear and bayesian model and compare results
 
