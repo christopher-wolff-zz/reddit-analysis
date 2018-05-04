@@ -2,6 +2,7 @@
 title: "What makes a popular Reddit post?"
 author: "InterstellR"
 date: "May 2, 2018"
+bibliography: bibliography.bib
 output: github_document
 ---
 
@@ -12,6 +13,7 @@ knitr::opts_chunk$set(echo = FALSE)
 ## Load packages and data
 
 ```{r load-packages, echo=FALSE, message=FALSE}
+library(lubridate)
 library(tidytext)
 library(tidyverse)
 library(scales)
@@ -59,7 +61,7 @@ posts <- mutate(
 #)
 ```
 
-To check whether our conversion is correct, we can look at the range of the new date variable. We see that the first post in the dataset was on `r min(posts$retrieved_date)` and the latest one was on `r max(posts$retrieved_date)`. Since this range is exactly the month of December 2017, we can be confident that the conversion was successful.
+To check whether our conversion is correct, we can look at the range of the new date variable. We see that the first post in the dataset was on `r min(posts$created_date)` and the latest one was on `r max(posts$created_date)`. Since this range is exactly the month of December 2017, we can be confident that the conversion was successful.
 
 ## Word Frequencies
 
@@ -117,14 +119,16 @@ ggplot(tidy_titles, aes(x = order, y = n / 1e3, fill = subreddit)) +
     title = 'Most frequent words within various subreddits',
     subtitle = 'in December 2017',
     x = '',
-    y = ''
+    y = 'Count (thousands)'
   ) +
   scale_x_continuous(
     breaks = tidy_titles$order,
     labels = tidy_titles$word,
     expand = c(0, 0)
   ) +
-  scale_y_continuous(expand = c(0, 0)) +
+  scale_y_continuous(
+    expand = c(0, 0)
+  ) +
   coord_flip() +
   theme_minimal() +
   theme(panel.grid.major.y = element_blank())
@@ -134,6 +138,10 @@ TODO: Discuss results for this visualization
 
 ## Sentiment Analysis
 
+One of the major questions we want to explore is whether positive or negative posts are more likely to become popular. Our hypothesis is that negative posts are generally more popular, as psychologists claim that humans have an innate "negativity bias" which draws them toward bad news moreso than good ones [@ito].
+
 ## Cats vs. Dogs
 
 ## Conclusion
+
+## References
