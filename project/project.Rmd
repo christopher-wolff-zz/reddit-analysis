@@ -61,7 +61,7 @@ posts <- mutate(
 
 To check whether our conversion is correct, we can look at the range of the new date variable. We see that the first post in the dataset was on `r min(posts$retrieved_date)` and the latest one was on `r max(posts$retrieved_date)`. Since this range is exactly the month of December 2017, we can be confident that the conversion was successful.
 
-## Exploration
+## Word Frequencies
 
 As infrequent Reddit users, we do not know much about the various subreddits yet. Hence, we want to start by finding out what the most popular ones are and gain insights into what the posts in each one are about. As a measure of a subreddit's popularity, we decide to use the cumulative score of all of its posts. The plot below shows the nine subreddits with the highest resulting totals.
 
@@ -74,20 +74,19 @@ popular_subs <- posts %>%
   ) %>%
   arrange(desc(total_score)) %>%
   head(9)
-ggplot(popular_subs, aes(x = reorder(subreddit, total_score), y = total_score * 1e-6)) +
+ggplot(popular_subs, aes(x = reorder(subreddit, total_score), y = total_score / 1e6)) +
   geom_col() +
   labs(
     title = 'Most popular subreddits',
     subtitle = 'in December 2017',
     x = '',
-    y = 'Cumulative score of posts'
+    y = 'Cumulative score of all posts'
   ) +
   scale_y_continuous(
     label = unit_format('M'),
     breaks = seq(0, 25, length = 6),
     expand = c(0, 0)
   ) +
-  scale_x_discrete(expand = c(0, 0)) +
   coord_flip() +
   theme_minimal()
 ```
@@ -111,7 +110,7 @@ tidy_titles <- tidy_titles %>%
   left_join(popular_subs, by = 'subreddit') %>%
   mutate(subreddit = reorder(subreddit, desc(total_score)))
 # plot results
-ggplot(tidy_titles, aes(x = order, y = n, fill = subreddit)) +
+ggplot(tidy_titles, aes(x = order, y = n / 1e3, fill = subreddit)) +
   geom_col(show.legend = FALSE) +
   facet_wrap(~subreddit, scales = 'free') +
   labs(
@@ -133,8 +132,8 @@ ggplot(tidy_titles, aes(x = order, y = n, fill = subreddit)) +
 
 TODO: Discuss results for this visualization
 
-## Analysis
+## Sentiment Analysis
 
-## Modeling
+## Cats vs. Dogs
 
 ## Conclusion
