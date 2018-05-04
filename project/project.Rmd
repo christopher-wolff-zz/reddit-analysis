@@ -28,7 +28,7 @@ posts <- read_csv('../data/reddit-posts.csv')
 
 "Reddit is an American social news aggregation, web content rating, and discussion website" (from [Wikipedia](https://en.wikipedia.org/wiki/Reddit)). People who are members of Reddit upload their posts and other people vote and comment on said posts, the posts with the most likes appear more towards the top. They are divided by thematic categories called subreddits, as well as overall categories of top posts, new posts, controversial posts, among others.
 
-TODO: Expand intro
+TODO: Expand introduction
 
 ### Data Set
 
@@ -63,7 +63,7 @@ posts <- mutate(
 
 To check whether our conversion is correct, we can look at the range of the new date variable. We see that the first post in the dataset was on `r min(posts$created_date)` and the latest one was on `r max(posts$created_date)`. Since this range is exactly the month of December 2017, we can be confident that the conversion was successful.
 
-## Word Frequencies
+## Exploring Popular Subreddits
 
 As infrequent Reddit users, we do not know much about the various subreddits yet. Hence, we want to start by finding out what the most popular ones are and gain insights into what the posts in each one are about. As a measure of a subreddit's popularity, we decide to use the cumulative score of all of its posts. The plot below shows the nine subreddits with the highest resulting totals.
 
@@ -138,9 +138,11 @@ TODO: Discuss results for this visualization
 
 ## Sentiment Analysis
 
-One of the major questions we want to explore is whether positive or negative posts are more likely to become popular. Our hypothesis is that negative posts are generally more popular, as psychologists claim that humans have an innate "negativity bias" which draws them toward bad news moreso than good ones [@ito].
+One of the major questions we want to explore is whether positive or negative posts are more likely to become popular. Our hypothesis is that negative posts are generally more popular, as psychologists claim that humans have an innate "negativity bias" which draws them toward bad news moreso than good ones [@ito]. To test this belief, we need to start by 
 
-## Cats vs. Dogs
+## Cats or Dogs?
+
+## Modeling Popularity
 
 ## Conclusion
 
