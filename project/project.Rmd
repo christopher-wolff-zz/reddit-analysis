@@ -251,9 +251,19 @@ TODO: Hypothesis test whether dogs or cats are more popular
 
 ## Modeling Popularity
 
-```{r lm-popularity}
+```{r clean-posts}
+clean_posts <- posts %>%
+  filter(!is.na(gilded), !is.na(stickied), !is.na(from_kind), !is.na(num_comments), !is.na(archived), hide_score == "false")
+```
 
-!is.na(hide_score)
+```{r lm-popularity}
+full_model <- lm(score ~ gilded, data = clean_posts)
+
+selected_model <- step(full_model, direction = "backward")
+```
+
+```{r tidy-lm}
+tidy(selected_model) %>% select(term, estimate)
 ```
 
 TODO: Density plot and summary statistics for popularity
