@@ -368,7 +368,7 @@ p_value2 <- null_dist2 %>%
   pull(p)
 ```
 
-We can clearly see that we have a p-value of `r p_value2`. This means that we can reject the null hypothesis and conclude that *dog posts indeed have a higher mean score than cat posts*.
+We have a p-value of `r p_value2`, which is not less than the chosen significance level of 5%. This means that we cannot reject the null hypothesis and *not conclude that dog posts indeed have a higher mean score than cat posts*.
 
 ## Modeling Popularity
 
@@ -545,7 +545,7 @@ In our analysis, we showed the following insights. Note that, of course, all of 
 
 - The nine most popular subreddits are unique and deal with a wide variety of interesting topics  
 - Titles with a negative sentiment polarity have a higher mean score than those with positive sentiment polarity (p = `r p_value`)  
-- Posts about dogs have a higher mean score than posts about cats (p = `r p_value2`)  
+- Posts about dogs do not necessarily have a higher mean score than posts about cats (p = `r p_value2`)  
 - Posting in /r/gifs is a good way to receive a high score  
 - Posting about December, games, and asking questions results in low average scores, but talking about news, watching, and time   results in high average scores  
 - Our linear model is able to explain `r r_squared1 * 100`% of the variance in post scores without text features, and `r r_squared2 * 100`% of the variance in post scores with text features
@@ -561,7 +561,7 @@ However, the thing we would want to do most if we had to repeat the analysis is 
 Regardless, we believe that our statistical methods were executed correctly and our results are accurate to the extent of the assumptions we made. The dataset we analyzed was reliable, seeing as all entries and statistics we observed seemed reasonable with respect to our Reddit knowledge. To conclude, we would like to create a list of tips for up-and-coming Reddit posters, fully knowing that none of these tips can guarantee that a post will gain popularity, since it is almost impossible to follow all of the constraints we impose on our findings and the findings only pertain to December 2017 anyway. Nonetheless, we think these will be interesting to experiment with and possibly explore in future research.
 
 1. Be super negative in your post  
-2. If you want to post a picture of an animal, choose dogs over cats  
+2. If you want to post a picture of dogs or cats, just pick your favorite  
 3. Try posting in the subreddit /r/gifs  
 4. Don't talk about December or games, and don't ask any questions  
 5. Instead, talk about news, home, and things you like to watch  
