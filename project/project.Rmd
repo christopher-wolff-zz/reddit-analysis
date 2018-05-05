@@ -232,51 +232,112 @@ ggplot(null_dist, aes(x = stat)) +
     x = "Score difference",
     y = "Density"
   ) +
-  geom_vline(xintercept = diff_mean_score, color = "red") +
+  geom_vline(xintercept = diff_mean_score, color = "blue") +
   theme_minimal()
 ```
 
-```{r calc-p}
+```{r calc-p2}
 p_value <- null_dist %>%
   filter(stat >= diff_mean_score) %>%
   summarize(p = n() / nrow(null_dist)) %>%
   pull(p)
 ```
 
-Using a one-sided hypothesis test, we find a p-value of `r p_value`. Using a significance level of 5%, we can infer that since our p-value is less than the significance level, we can reject the null hypothesis and conclude that negative posts do indeed have a higher average mean score than positive posts.
+Using a one-sided hypothesis test, we find a p-value of `r p_value`. Using a significance level of 5%, we can infer that since our p-value is less than the significance level, we can reject the null hypothesis and conclude that *negative posts do indeed have a higher average mean score than positive posts*.
 
 ## Cats vs. Dogs
 
-Here we created two new variables called `dog` and `cat` in order to determine whether a title contains the word cat or the word dog. 
+A hotly debated question is whether dogs or cats are more popular. We aim to once and for all determine which one is the better animal, using a hypothesis test. Our hypothesis is that the mean score of a post depends on whether the post mentions dogs or cats. We only look at posts which mention either of the two, but not both. First, we need to create two new variables called `dog` and `cat` in order to determine whether a title contains the word "cat" or "dog", repectively.
 
-```{r catsordogsposts}
-catsdogsposts <- posts %>%
-  select(title, score, num_comments) %>%
+```{r find-dogs-cats}
+posts <- mutate(
+  posts,
+  dog = case_when(
+    str_detect(title, " dog ") | str_detect(title, "puppy") |
+      str_detect(title, "Dog ") | str_detect(title, "Puppy ") |
+      str_detect(title, "PUPPY ") | str_detect(title, " DOG ") |
+      str_detect(title, " PUPPY ") ~ "yes",
+    TRUE ~ "no"
+  ),
+  cat = case_when(
+    str_detect(title, " cat ") | str_detect(title, "Cat ") |
+      str_detect(title, " CAT ") | str_detect(title, "Kitten ") |
+      str_detect(title, " kitten ") | str_detect(title, " KITTEN ") |
+      str_detect(title, "Feline") | str_detect(title, " feline ") |
+      str_detect(title, " FELINE ") ~ "yes",
+    TRUE ~ "no"
+  ),
+  animal = case_when(
+    dog == "yes" & cat == "no" ~ "dog",
+    cat == "yes" & dog == "no" ~ "cat"
+  )
+)
+# Calculate percentage of dogs and cats
+perc_dogs <- posts %>%
+  filter(dog == "yes") %>%
+  summarize(perc_dogs = n() / nrow(posts) * 100) %>%
+  pull(perc_dogs)
+perc_cats <- posts %>%
+  filter(cat == "yes") %>%
+  summarize(perc_cats = n() / nrow(posts) * 100) %>%
+  pull(perc_cats)
 ```
 
-```{r dogsvariable}
-  catsdogsposts <- catsdogsposts %>%
-  mutate(dog = case_when(
-str_detect(title, " dog ") | str_detect(title, "puppy") | str_detect(title, "Dog ") | str_detect(title, "Puppy ") | str_detect(title, "PUPPY ") | str_detect(title, "DOG ") | str_detect(title, " DOG ") | str_detect(title, " PUPPY ") ~ "yes",
-TRUE ~ "no"))
+We observe that `r perc_dogs`% of the posts mention dogs and `r perc_cats`% of the posts mention cats.
+
+Next, we are going to conduct a hypothesis test to determine whether score of a post is independent of whether its title contains "cat" or "dog". We will follow a similar procedure as for the previous test. The null hypothesis and the alternative hypothesis are as follows.  
+
+H0: A post's score is independent of whether dogs or cats are mentioned in the title.  
+HA: Dog posts have a higher mean score than cat posts.  
+
+For the same reasons mentioned in the previous test, we can safely conduct simlation based inference here as well. First, we calculate the observed difference in mean score between posts with negative and positive `sent_class`.
+
+```{r diff-mean-score2}
+mean_score_dog <- posts %>%
+  filter(animal == "dog") %>%
+  summarize(mean_score = mean(score)) %>%
+  pull(mean_score)
+mean_score_cat <- posts %>%
+  filter(animal == "cat") %>%
+  summarize(mean_score = mean(score)) %>%
+  pull(mean_score)
+diff_mean_score2 <- mean_score_dog - mean_score_cat
 ```
 
-```{r catsvariable}
-  catsdogsposts <- catsdogsposts %>%
-  mutate(cat = case_when(
-str_detect(title, " cat ") | str_detect(title, "Cat ") | str_detect(title, "CAT ") | str_detect(title, " CAT ") | str_detect(title, "Kitten ") | str_detect(title, " kitten ") | str_detect(title, "KITTEN ") | str_detect(title, " KITTEN ") | str_detect(title, "Feline") | str_detect(title, " feline ") | str_detect(title, "FELINE ") | str_detect(title, " FELINE ") ~ "yes",
-TRUE ~ "no"))
+We find that, in our sample, posts that mention dogs have an average score which is `r diff_mean_score2` higher than those that mention cats. Next, let's figure out whether this difference could be due to chance using bootstrapping with permutation.
+
+```{r null-dist2}
+null_dist2 <- posts %>%
+  filter(animal %in% c("dog", "cat")) %>%
+  specify(score ~ animal) %>%
+  hypothesize(null = "independence") %>% 
+  generate(reps = 1000, type = "permute") %>% 
+  calculate(stat = "diff in means", order = c("dog", "cat"))
 ```
 
-```{r dogorcat}
-catsdogsposts <- catsdogsposts %>%
-  mutate(dogorcat = case_when(
-    dog == 'yes' & cat == 'no' ~ "dog", 
-    cat == 'yes' & dog == 'no' ~ "cat", 
-    TRUE ~ "None"))
+The resulting null distribution of the differences in means in shown below.
+
+```{r plot-null-dist2}
+ggplot(null_dist, aes(x = stat)) +
+  geom_density() +
+  labs(
+    title = "Null distribution of difference in mean scores",
+    subtitle = "between dog posts and cat posts",
+    x = "Score difference",
+    y = "Density"
+  ) +
+  geom_vline(xintercept = diff_mean_score2, color = "blue") +
+  theme_minimal()
 ```
 
-Next, we are going to conduct a hypothesis test to determine whether score of a post is independent of whether its title contains "cat" or "dog".
+```{r calc-p}
+p_value2 <- null_dist2 %>%
+  filter(stat >= diff_mean_score2) %>%
+  summarize(p = n() / nrow(null_dist2)) %>%
+  pull(p)
+```
+
+We can clearly see that we have a p-value of `r p_value2`. This means that we can reject the null hypothesis and conclude that *dog posts indeed have a higher mean score than cat posts*.
 
 ## Modeling Popularity
 
@@ -334,14 +395,17 @@ tidy(selected_model) %>% select(term, estimate)
 Looking at the slope coeffiecents for our selected model's variables of `gilded`, `num_comments`, `stickied`, and `sent_class`, we can analyze the following. For every one gilded point a Reddit post receives, the score goes up by 4,622.4, given that all other variables remain constant. This makes sense since user really must like a post if they're willing to pay a gold donation to the creator. For every one comment the Reddit post recieves, the score goes by 3.9, given that all other variables remain constant. For when a post gets stickied by the moderators of the subreddits, the score goes down by 144.3, given that all other variables remain constant. This is an interesting analysis because we would expect a post that gets attention from the moderators and gets placed at the top of the feed would recieve a higher score but apparently that is not the case. Lastly, when a post's title is of neutral sentiment, the post's score goes down by 6.7 and if the post's title is of positive sentiment, the post's score goes down by 8.0. 
 
 
-```{r getting-rsqrd}
+```{r getting-r2}
 (selectedmodel_r2 <- glance(selected_model) %>%
   pull(adj.r.squared))
 ```
 
+<<<<<<< HEAD
 The r-squared for our selected_model is not very good in terms for statistical analysis. However, we expected this given that we did not look at the text of the posts when modeling the popularity score. We expect the text of the post to have a large affect on a post's popularity score. 
 
 
+=======
+>>>>>>> 426ba7f8ed9f2de1a5b877f14d0bbc48007cad29
 ## Discussion
 
 TODO: Discuss results
