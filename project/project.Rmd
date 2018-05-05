@@ -341,6 +341,12 @@ We can clearly see that we have a p-value of `r p_value2`. This means that we ca
 
 ## Modeling Popularity
 
+
+```{r timeup-variable}
+posts <- posts %>%
+  mutate(timeup = (created_utc - retrieved_on)/3,600,000)
+```
+
 Our main resarch goal is to find out what makes a post popular. Hence, we want to build a model that can predict the score of a given post from several of its attributes. Before doing so, we visualize and summarize the distribution of the posts' scores. We will also exclude scores higher than the 90th percentile in the visualization because these posts are scores far greater than most others, making it difficult to visualize the distribution.
 
 ```{r score-dist}
@@ -377,15 +383,22 @@ clean_posts <- filter(
 ```
 
 ```{r lm-popularity}
-full_model <- lm(score ~ num_comments + stickied + gilded + sent_class, data = clean_posts)
-selected_model <- step(full_model, direction = "backward")
+full_model <- lm(score ~ gilded + num_comments + stickied +timeup + sent_class, data = clean_posts)
+
+selected_model <- step(full_model, scope = . ~ .^2, direction = "backward")
 ```
 
 ```{r tidy-lm}
 tidy(selected_model) %>% select(term, estimate)
 ```
 
-TODO: Build linear and bayesian model and compare results
+Looking at the slope coeffiecents for our selected model's variables of `gilded`, `num_comments`, `stickied`, and `sent_class`, we can analyze the following. For every one gilded point a Reddit post receives, the score goes up by 4,622.4, given that all other variables remain constant. This makes sense since user really must like a post if they're willing to pay a gold donation to the creator. For every one comment the Reddit post recieves, the score goes by 3.9, given that all other variables remain constant. For when a post gets stickied by the moderators of the subreddits, the score goes down by 144.3, given that all other variables remain constant. This is an interesting analysis because we would expect a post that gets attention from the moderators and gets placed at the top of the feed would recieve a higher score but apparently that is not the case. Lastly, when a post's title is of neutral sentiment, 
+
+
+```{r getting-r2}
+(selectedmodel_r2 <- glance(selected_model) %>%
+  pull(adj.r.squared))
+```
 
 ## Discussion
 
