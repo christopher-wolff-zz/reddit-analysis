@@ -28,23 +28,19 @@ posts <- read_csv("../data/reddit.csv")
 
 ## Introduction
 
-Reddit is a social news platform owned by Conde Nast that derives its content from posts made by users from all over the world. Some like to call it "The Front Page of the Internet". Theses post can range from cute cat photos to serious news about our political system. Reddit's users truly represent individuals from different backgrounds, opinions, and places. These Reddit users upload their posts and other users vote and comment on said posts, the posts with the most likes appear more towards the top. They are divided by thematic categories called subreddits, as well as overall categories of top posts, new posts, controversial posts, among others.
-
-TODO: Expand introduction
+Reddit is a social news platform that derives its content from posts made by users from all over the world and is also known as "the front page of the internet." These post can range from cute cat photos to serious news about our political system. Reddit's users truly represent individuals from different backgrounds, opinions, and places. People can upload their pictures, thoughts, and opinions, and other users give them feedback in the form of comments and votes. Posts with the most likes appear more towards the top of the website and therefore get more attention. Reddit is divided into thematic categories called subreddits and also allows for sorting by top posts, new posts, controversial posts, and criteria.
 
 #### Research Question
 
-Coincidentally, our team is made up of avid Reddit fans. All three of us are constantly checking it for interesting, insightful, and funny posts. Given that Reddit recieves thousands of posts per day and the little time in the day we have to check Reddit, we all usually only check the "popular" feed. So, it got us thinking that we should learn more about the site we use pretty frequently. Specifically, we want to analyze what makes a Reddit post popular.
+Coincidentally, our team is made up of avid Reddit fans. All three of us are constantly checking it for interesting, insightful, and funny posts. Given that Reddit receives thousands of posts per day and the little time in the day we have to check Reddit, we all usually only check the "popular" feed. So, we thought that we should learn more about the site we know and love. Specifically, we want to analyze what makes a Reddit post popular.
 
 #### Data Set
 
-The data set is comprised of Reddit posts from December 2017, since it was the latest data set we could find and wanted to keep up with the most recent trends. Also,  it will be interesting to explore themes related to Christmas. We retrieved it from the Google BigQuery API. The data set contains `r ncol(posts)` variables and `r comma_format()(nrow(posts))` observations. 
-
-Our dataset is made up of `r ncol(posts)` variables but for this project, we will only be looking at these variables: `subreddit` (categorical, name of the subreddit the post belongs to), `num_comments` (numerical, the number of comments on the post),`score` (numerical, popularity score of post), `ups` (numerical, amount of up votes the post recieved), `downs` (numerical, amount of down votes the post recieved), `title` (categorical, the title of the post), `selftext` (categorical, the text body on the post), `gilded` (numerical, amount of gold reddit donations from other users), `over_18` ( categorical, true or fale if post is only appropriate for users over the age of 18), and `stickied` (categorical, whether or not post was stickied by moderators of the post's subreddit). The rest of the descriptions for the other variables can be found in our data folder. 
+We found a dataset of Reddit posts from December 2017 published by Google BigQuery. In the full dataset, there were over 10 million entries, but we decided to focus on a random sample of 1 million due to computation and memory constraints. Each row in the dataset represents a post made by a user. The data set contains `r ncol(posts)` variables, all of which are explained in the accompanying README. Some of the ones we are most interested in are `num_comments`, which is the number of comments for the post, `stickied`, which indicates whether the post has been chosen to appear at the very top of a subreddit, `over_18`, which indicates whether users need to be 18 in order to view it, `gilded`, which denotes the number of [Reddit Gold](https://www.reddit.com/gold/about/) donations the poster received for the post, as well as `title`, `subreddit`, and `score`. The post's score will be a primary focus of our analysis and represents the difference between the total number of upvotes and downvotes the post received. A higher score means a more popular post.
 
 ## Exploring Term Frequencies
 
-As stricty popular-feed Reddit users, we do not know much about the various subreddits yet. Hence, we want to start by finding out what the most popular ones are and gain insights into what the posts in each one are about. As a measure of a subreddit's popularity, we decide to use the cumulative score of all of its posts. The plot below shows the nine subreddits with the highest resulting totals.
+We all spend most of our time browsing the front page of Reddit, and do not know much about the various subreddits yet. Hence, we want to start by finding out what the most popular ones are and gain insights into what the posts in each one are about. As a measure of a subreddit's popularity, we decide to use the cumulative score of all of its posts. The plot below shows the nine subreddits with the highest resulting totals.
 
 ```{r active-subreddits}
 popular_subs <- posts %>%
@@ -112,7 +108,7 @@ ggplot(tidy_titles, aes(x = order, y = n, fill = subreddit)) +
   theme(panel.grid.major.y = element_blank())
 ```
 
-TODO: Discuss results for this visualization
+The results are interesting because it seems like the top subreddits are very diverse. As we expected, posts in `The_Donald` mostly talk about Donald Trump, Obama, and fake news, whereas posts in `gaming` unsurprisingly talk about games, trailers, and apparently the game `DayZ`. Posters in `funny` appear to like sharing links, seeing as the words "https" and "t.co" are very frequent, and `dankmemes` is all about Ajit Pai, who is the chairman of the FCC, as well as net neutrality. The `aww` subreddit frequently mentions cats, dogs, and babies, and overall, people seem to mention Christmas frequently, which makes sense given that these posts are from December.
 
 ## Sentiment Analysis
 
