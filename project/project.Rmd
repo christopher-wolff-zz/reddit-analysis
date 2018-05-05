@@ -9,6 +9,7 @@ output: github_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
 options(digits = 2)
+set.seed(20180505)
 ```
 
 ```{r load-packages, echo=FALSE, message=FALSE}
@@ -223,7 +224,7 @@ null_dist <- posts %>%
 The resulting null distribution of the differences in means in shown below.
 
 ```{r plot-null-dist}
-ggplot(null_dist, aes(x = stat)) + 
+ggplot(null_dist, aes(x = stat)) +
   geom_density() +
   labs(
     title = "Null distribution of difference in mean scores",
@@ -246,24 +247,91 @@ Using a one-sided hypothesis test, we find a p-value of `r p_value`. Using a sig
 
 ## Cats vs. Dogs
 
-TODO: Hypothesis test whether dogs or cats are more popular
+Here we created two new variables called `dog` and `cat` in order to determine whether a title contains the word cat or the word dog. 
+
+```{r catsordogsposts}
+catsdogsposts <- posts %>%
+  select(title, score, num_comments) %>%
+```
+
+```{r dogsvariable}
+  catsdogsposts <- catsdogsposts %>%
+  mutate(dog = case_when(
+str_detect(title, " dog ") | str_detect(title, "puppy") | str_detect(title, "Dog ") | str_detect(title, "Puppy ") | str_detect(title, "PUPPY ") | str_detect(title, "DOG ") | str_detect(title, " DOG ") | str_detect(title, " PUPPY ") ~ "yes",
+TRUE ~ "no"))
+```
+
+```{r catsvariable}
+  catsdogsposts <- catsdogsposts %>%
+  mutate(cat = case_when(
+str_detect(title, " cat ") | str_detect(title, "Cat ") | str_detect(title, "CAT ") | str_detect(title, " CAT ") | str_detect(title, "Kitten ") | str_detect(title, " kitten ") | str_detect(title, "KITTEN ") | str_detect(title, " KITTEN ") | str_detect(title, "Feline") | str_detect(title, " feline ") | str_detect(title, "FELINE ") | str_detect(title, " FELINE ") ~ "yes",
+TRUE ~ "no"))
+```
+
+```{r dogorcat}
+catsdogsposts <- catsdogsposts %>%
+  mutate(dogorcat = case_when(
+    dog == 'yes' & cat == 'no' ~ "dog", 
+    cat == 'yes' & dog == 'no' ~ "cat", 
+    TRUE ~ "None"))
+```
+
+Next, we are going to conduct a hypothesis test to determine whether score of a post is independent of whether its title contains "cat" or "dog".
 
 ## Modeling Popularity
 
+<<<<<<< HEAD
 ```{r timeup-variable}
 posts <- posts %>%
   mutate(timeup = (created_utc - retrieved_on)/3,600,000)
 ```
 
+=======
+Our main resarch goal is to find out what makes a post popular. Hence, we want to build a model that can predict the score of a given post from several of its attributes. Before doing so, we visualize and summarize the distribution of the posts' scores. We will also exclude scores higher than the 90th percentile in the visualization because these posts are scores far greater than most others, making it difficult to visualize the distribution.
+
+```{r score-dist}
+score_q90 <- quantile(posts$score, probs = 0.90)
+posts %>%
+  filter(score < score_q90) %>%
+  ggplot(aes(x = score)) +
+  geom_histogram(
+    bins = 40,
+    color = "black",
+    fill = "white"
+  ) +
+  labs(
+    title = "Distribution of post scores",
+    subtitle = "on Reddit in December 2017",
+    x = "Score",
+    y = "Count"
+  ) +
+  scale_y_continuous(label = comma) +
+  theme_minimal()
+```
+
+Note that since we exclude posts above the 90th percentile, we could expect this distribution to continue with a similar trend further towards the right.
+
+>>>>>>> aad06fc9b3a2df3da0c449cdfb6e7254fd3e2d5c
 ```{r clean-posts}
-clean_posts <- posts %>%
-  filter(!is.na(gilded), !is.na(stickied), !is.na(num_comments), !is.na(archived), hide_score == "false")
+clean_posts <- filter(
+  posts,
+  !is.na(gilded),
+  !is.na(stickied),
+  !is.na(num_comments),
+  !is.na(sent_score),
+  hide_score == "false"
+)
 ```
 
 ```{r lm-popularity}
+<<<<<<< HEAD
 full_model <- lm(score ~ gilded + num_comments + stickied +timeup + sent_class, data = clean_posts)
 
 selected_model <- step(full_model, scope = . ~ .^2, direction = "backward")
+=======
+full_model <- lm(score ~ num_comments + stickied + gilded + sent_class, data = clean_posts)
+selected_model <- step(full_model, direction = "backward")
+>>>>>>> aad06fc9b3a2df3da0c449cdfb6e7254fd3e2d5c
 ```
 
 ```{r tidy-lm}
