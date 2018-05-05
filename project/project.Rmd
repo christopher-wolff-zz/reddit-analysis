@@ -247,7 +247,36 @@ Using a one-sided hypothesis test, we find a p-value of `r p_value`. Using a sig
 
 ## Cats vs. Dogs
 
-TODO: Hypothesis test whether dogs or cats are more popular
+Here we created two new variables called `dog` and `cat` in order to determine whether a title contains the word cat or the word dog. 
+
+```{r catsordogsposts}
+catsdogsposts <- posts %>%
+  select(title, score, num_comments) %>%
+```
+
+```{r dogsvariable}
+  catsdogsposts <- catsdogsposts %>%
+  mutate(dog = case_when(
+str_detect(title, " dog ") | str_detect(title, "puppy") | str_detect(title, "Dog ") | str_detect(title, "Puppy ") | str_detect(title, "PUPPY ") | str_detect(title, "DOG ") | str_detect(title, " DOG ") | str_detect(title, " PUPPY ") ~ "yes",
+TRUE ~ "no"))
+```
+
+```{r catsvariable}
+  catsdogsposts <- catsdogsposts %>%
+  mutate(cat = case_when(
+str_detect(title, " cat ") | str_detect(title, "Cat ") | str_detect(title, "CAT ") | str_detect(title, " CAT ") | str_detect(title, "Kitten ") | str_detect(title, " kitten ") | str_detect(title, "KITTEN ") | str_detect(title, " KITTEN ") | str_detect(title, "Feline") | str_detect(title, " feline ") | str_detect(title, "FELINE ") | str_detect(title, " FELINE ") ~ "yes",
+TRUE ~ "no"))
+```
+
+```{r dogorcat}
+catsdogsposts <- catsdogsposts %>%
+  mutate(dogorcat = case_when(
+    dog == 'yes' & cat == 'no' ~ "dog", 
+    cat == 'yes' & dog == 'no' ~ "cat", 
+    TRUE ~ "None"))
+```
+
+Next, we are going to conduct a hypothesis test to determine whether score of a post is independent of whether its title contains "cat" or "dog".
 
 ## Modeling Popularity
 
@@ -288,7 +317,6 @@ clean_posts <- filter(
 
 ```{r lm-popularity}
 full_model <- lm(score ~ num_comments + stickied + gilded + sent_class, data = clean_posts)
-
 selected_model <- step(full_model, direction = "backward")
 ```
 
