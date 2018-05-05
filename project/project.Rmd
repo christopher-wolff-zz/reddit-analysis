@@ -252,11 +252,11 @@ TODO: Hypothesis test whether dogs or cats are more popular
 
 ```{r clean-posts}
 clean_posts <- posts %>%
-  filter(!is.na(gilded), !is.na(stickied), !is.na(from_kind), !is.na(num_comments), !is.na(archived), hide_score == "false")
+  filter(!is.na(gilded), !is.na(stickied), !is.na(num_comments), !is.na(archived), hide_score == "false")
 ```
 
 ```{r lm-popularity}
-full_model <- lm(score ~ gilded, data = clean_posts)
+full_model <- lm(score ~ gilded + num_comments, data = clean_posts)
 
 selected_model <- step(full_model, direction = "backward")
 ```
