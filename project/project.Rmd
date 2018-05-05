@@ -9,6 +9,7 @@ output: github_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
 options(digits = 2)
+set.seed(20180505)
 ```
 
 ```{r load-packages, echo=FALSE, message=FALSE}
@@ -223,7 +224,7 @@ null_dist <- posts %>%
 The resulting null distribution of the differences in means in shown below.
 
 ```{r plot-null-dist}
-ggplot(null_dist, aes(x = stat)) + 
+ggplot(null_dist, aes(x = stat)) +
   geom_density() +
   labs(
     title = "Null distribution of difference in mean scores",
