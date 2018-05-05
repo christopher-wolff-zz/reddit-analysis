@@ -1,5 +1,7 @@
 # data
 
+The dataset is too big to upload to GitHub, but it can be found at this link: https://drive.google.com/open?id=1oW5VFZ8Z-oQipB4pKoQFb8VcquHhtWVG
+
 Code Dictionary:
 
 created_utc: Numerical Variable, Number of milliseconds since January, 1970 (Time post was created)
