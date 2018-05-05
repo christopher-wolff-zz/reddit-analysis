@@ -6,7 +6,7 @@ May 2, 2018
 Introduction
 ------------
 
-"Reddit is an American social news aggregation, web content rating, and discussion website" (from [Wikipedia](https://en.wikipedia.org/wiki/Reddit)). People who are members of Reddit upload their posts and other people vote and comment on said posts, the posts with the most likes appear more towards the top. They are divided by thematic categories called subreddits, as well as overall categories of top posts, new posts, controversial posts, among others.
+Reddit is a social news platform owned by Conde Nast that derives its content from posts made by users from all over the world. Some like to call it "The Front Page of the Internet". Theses post can range from cute cat photos to serious news about our political system. Reddit's users truly represent individuals from different backgrounds, opinions, and places. These Reddit users upload their posts and other users vote and comment on said posts, the posts with the most likes appear more towards the top. They are divided by thematic categories called subreddits, as well as overall categories of top posts, new posts, controversial posts, among others.
 
 TODO: Expand introduction
 
@@ -14,21 +14,14 @@ TODO: Expand introduction
 
 The data set is comprised of Reddit posts from December 2017, since it was the latest data set we could find and wanted to keep up with the most recent trends. Also, it will be interesting to explore themes related to Christmas. We retrieved it from the Google BigQuery API. The data set contains 33 variables and 1000000 observations.
 
-Our dataset is made up of 33 variables but for this project, we will only be looking at these variables: `subreddit` (categorical, name of the subreddit the post belongs to), `num_comments` (numerical, the number of comments on the post),`score` (numerical, popularity score of post), `ups` (numerical, amount of up votes the post recieved), `downs` (numerical, amount of down votes the post recieved), `title` (categorical, the title of the post), `selftext` (categorical, the text body on the post), `gilded` (numerical, amount of gold reddit donations from other users), `over_18` ( categorical, true or fale if post is only appropriate for users over the age of 18). The rest of the descriptions for the other variables can be found in our data folder.
+Our dataset is made up of 33 variables but for this project, we will only be looking at these variables: `subreddit` (categorical, name of the subreddit the post belongs to), `num_comments` (numerical, the number of comments on the post),`score` (numerical, popularity score of post), `ups` (numerical, amount of up votes the post recieved), `downs` (numerical, amount of down votes the post recieved), `title` (categorical, the title of the post), `selftext` (categorical, the text body on the post), `gilded` (numerical, amount of gold reddit donations from other users), `over_18` ( categorical, true or fale if post is only appropriate for users over the age of 18), and `stickied` (categorical, whether or not post was stickied by moderators of the post's subreddit). The rest of the descriptions for the other variables can be found in our data folder.
 
 ### Research Question
 
 Coincidentally, our team is made up of avid Reddit fans. All three of us are constantly checking it for interesting, insightful, and funny posts. Given that Reddit recieves thousands of posts per day and the little time in the day we have to check Reddit, we all usually only check the "popular" feed. So, it got us thinking that we should learn more about the site we use pretty frequently. Specifically, we want to analyze what makes a Reddit post popular.
 
-Cleaning
---------
-
-The dataset we acquired is mostly clean; however, there is one thing we need to clean up before we began our analysis. The variable `created_utc` gives the date that the post was created as the difference in milliseconds from January 1st, 1970. This quantity is not very easy to read or interpret, so we convert it to a combination of day, hour, and minute. We do not need to store the month and year since these values are the same for all entries in the dataset.
-
-To check whether our conversion is correct, we can look at the range of the new date variable. We see that the first post in the dataset was on 2017-12-01 00:00:04 and the latest one was on 2017-12-31 23:59:58. Since this range is exactly the month of December 2017, we can be confident that the conversion was successful.
-
-Exploring Popular Subreddits
-----------------------------
+Exploring Term Frequencies
+--------------------------
 
 As stricty popular-feed Reddit users, we do not know much about the various subreddits yet. Hence, we want to start by finding out what the most popular ones are and gain insights into what the posts in each one are about. As a measure of a subreddit's popularity, we decide to use the cumulative score of all of its posts. The plot below shows the nine subreddits with the highest resulting totals.
 
@@ -51,19 +44,21 @@ It turns out that there are a total of 235929 positive posts, 175807 negative po
 
     ## # A tibble: 3 x 2
     ##   title                                                         sent_class
-    ##   <chr>                                                         <chr>     
+    ##   <chr>                                                         <fct>     
     ## 1 Always tempted to pull out the twins like this at the gym...… pos       
     ## 2 Unstable was one of my best drafts ever                       pos       
     ## 3 The benefits are obvious, it just takes discipline            pos
 
     ## # A tibble: 3 x 2
     ##   title                                                         sent_class
-    ##   <chr>                                                         <chr>     
+    ##   <chr>                                                         <fct>     
     ## 1 Finally getting started with my bass build! - but I have no … neg       
     ## 2 "Every time I try to queue up I get \"You failed to accept\"… neg       
     ## 3 This is why i fear hardcore                                   neg
 
-It appears that the sentiment analysis results match our intuition -- the positively classified titles talk about "best drafts ever" and "obvious benefits," and the negatively classified titles talk about a technical problem with some video game and fears.
+It appears that the sentiment analysis results match our intuition -- the positively classified titles talk about "best drafts ever" and "obvious benefits," and the negatively classified titles talk about a technical problem with some video game and fears. We are interested in common positive and common negative words in the dataset, in order to possibly use these as features for our score prediction model. The plot below shows the ten words of each class with the most contribution to overall positivity and negativity.
+
+![](project_files/figure-markdown_github/plot-sentiments-1.png)
 
 Now, we can finally test our hypothesis. The null hypothesis and the alternative hypothesis are as follows.
 
@@ -85,11 +80,9 @@ Using a one-sided hypothesis test, we find a p-value of 0. Using a significance 
 Cats vs. Dogs
 -------------
 
-A hotly debated question is whether dogs or cats are more popular. We aim to once and for all determine which one is the better animal, using a hypothesis test. Our hypothesis is that the mean score of a post depends on whether the post mentions dogs or cats. We only look at posts which mention either of the two, but not both. First, we need to create two new variables called `dog` and `cat` in order to determine whether a title contains the word "cat" or "dog", repectively.
+A hotly debated question among us is whether dog or cat posts are more popular. We aim to once and for all determine which one is better using a hypothesis test. Our hypothesis is that the mean score of a post depends on whether the post mentions dogs or cats. We only look at posts which mention either of the two, but not both. First, we need to create two new variables called `dog` and `cat` in order to determine whether a title contains the word "cat" or "dog" or some variation of either term.
 
-We observe that 0.25% of the posts mention dogs and 0.19% of the posts mention cats.
-
-Next, we are going to conduct a hypothesis test to determine whether score of a post is independent of whether its title contains "cat" or "dog". We will follow a similar procedure as for the previous test. The null hypothesis and the alternative hypothesis are as follows.
+We observe that 0.25% of the posts mention dogs and 0.19% of the posts mention cats. Next, we are going to conduct a hypothesis test to determine whether score of a post is independent of whether its title contains "cat" or "dog". We will follow a similar procedure as for the previous test. The null hypothesis and the alternative hypothesis are as follows.
 
 H0: A post's score is independent of whether dogs or cats are mentioned in the title.
 HA: Dog posts have a higher mean score than cat posts.
@@ -107,47 +100,76 @@ We can clearly see that we have a p-value of 0.14. This means that we can reject
 Modeling Popularity
 -------------------
 
-Our main resarch goal is to find out what makes a post popular. Hence, we want to build a model that can predict the score of a given post from several of its attributes. Before doing so, we visualize and summarize the distribution of the posts' scores. We will also exclude scores higher than the 90th percentile in the visualization because these posts are scores far greater than most others, making it difficult to visualize the distribution.
+Our main resarch goal is to find out what makes a post popular. Hence, we want to build a model that can predict the score of a given post from several of its attributes. Before doing so, we want to visualize and summarize the distribution of the posts' scores. We exclude scores higher than the 90th percentile in this visualization because these posts are scores far greater than most others, making it difficult to visualize the shape of the distribution.
 
 ![](project_files/figure-markdown_github/score-dist-1.png)
 
-Note that since we exclude posts above the 90th percentile, we could expect this distribution to continue with a similar trend further towards the right.
+It appears that the post scores follow something resembling a beta distribution. The average score is 58.66 and the standard deviation is 1027.86. The highest score by any post in December 2017 is 166121 by [this](http://www.reddit.com/r/gaming/comments/7m13gd/as_a_teen_in_the_80s_my_conservative_godfearing/) post, which is about the game Dungeons & Dragons.
+
+### Feature Engineering
+
+We would like to build a model that predicts a post's score from various features, so we need to decide which features we want to look at. We start by creating a variable that denotes the total uptime of the post, i.e. the difference between the time it was retrieved and the time it was created. Both of these quantitites are given as the number of seconds from a time origin, so we can simply compute the difference between the two and convert the result into hours, as that will be a more interpretable quantity.
+
+Next, we want to have a variable that denotes the length of the title as well as the body text of each post. Hence, we compute the number of characters in `title` and store it in a new variable `title_length`.
+
+We would like to include the `subreddit` variable, but there are 1000000 levels which will increase the model complexity drastically. Hence, we only include indicator variables for the nine most popular subreddits we explored earlier as well as one additional level called "other".
+
+We will also include the two variables we created earlier -- `sent_class` and `animal` -- as well as `gilded`, `stickied`, and `num_comments`. Next, we remove posts where the score is hidden or any of the predictor variables are missing.
+
+This leaves us with 995003 posts out of the original 1000000. Our first approach will be a linear model, optimized using backward selection by AIC.
 
     ## Start:  AIC=1.4e+07
-    ## score ~ gilded + num_comments + stickied + timeup + sent_class
+    ## score ~ uptime + title_length + gilded + stickied + num_comments + 
+    ##     sent_class + animal + subreddit_
     ## 
     ##                Df Sum of Sq      RSS      AIC
-    ## - timeup        1  3.20e+05 8.76e+11 13619500
-    ## <none>                      8.76e+11 13619502
-    ## - sent_class    2  7.50e+06 8.76e+11 13619506
-    ## - stickied      1  2.43e+07 8.76e+11 13619528
-    ## - gilded        1  2.03e+10 8.96e+11 13642346
-    ## - num_comments  1  1.44e+11 1.02e+12 13771223
+    ## - uptime        1  6.57e+05 8.71e+11 13614367
+    ## <none>                      8.71e+11 13614368
+    ## - title_length  1  2.14e+06 8.71e+11 13614368
+    ## - sent_class    2  4.71e+06 8.71e+11 13614369
+    ## - animal        2  1.95e+07 8.71e+11 13614386
+    ## - stickied      1  2.08e+07 8.71e+11 13614390
+    ## - subreddit_    9  4.45e+09 8.76e+11 13619422
+    ## - gilded        1  2.03e+10 8.92e+11 13637322
+    ## - num_comments  1  1.43e+11 1.01e+12 13765773
     ## 
     ## Step:  AIC=1.4e+07
-    ## score ~ gilded + num_comments + stickied + sent_class
+    ## score ~ title_length + gilded + stickied + num_comments + sent_class + 
+    ##     animal + subreddit_
     ## 
     ##                Df Sum of Sq      RSS      AIC
-    ## <none>                      8.76e+11 13619500
-    ## - sent_class    2  7.52e+06 8.76e+11 13619505
-    ## - stickied      1  2.44e+07 8.76e+11 13619526
-    ## - gilded        1  2.03e+10 8.96e+11 13642344
-    ## - num_comments  1  1.44e+11 1.02e+12 13771222
+    ## <none>                      8.71e+11 13614367
+    ## - title_length  1  2.11e+06 8.71e+11 13614367
+    ## - sent_class    2  4.73e+06 8.71e+11 13614368
+    ## - animal        2  1.95e+07 8.71e+11 13614385
+    ## - stickied      1  2.09e+07 8.71e+11 13614388
+    ## - subreddit_    9  4.45e+09 8.76e+11 13619421
+    ## - gilded        1  2.03e+10 8.92e+11 13637320
+    ## - num_comments  1  1.43e+11 1.01e+12 13765773
 
-    ##                term estimate
-    ## 1       (Intercept)     32.0
-    ## 2            gilded   4622.4
-    ## 3      num_comments      3.9
-    ## 4      stickiedtrue   -144.3
-    ## 5 sent_classneutral     -6.7
-    ## 6     sent_classpos     -8.0
+    ##                       term estimate
+    ## 1              (Intercept)  421.949
+    ## 2             title_length   -0.036
+    ## 3                   gilded 4621.642
+    ## 4             stickiedtrue -133.418
+    ## 5             num_comments    3.926
+    ## 6            sent_classpos   -2.981
+    ## 7            sent_classneg    3.899
+    ## 8                animaldog   86.902
+    ## 9                animalcat   27.182
+    ## 10     subreddit_dankmemes    1.897
+    ## 11         subreddit_funny -165.243
+    ## 12        subreddit_gaming -135.634
+    ## 13          subreddit_gifs  691.890
+    ## 14         subreddit_other -405.045
+    ## 15          subreddit_pics   -3.026
+    ## 16      subreddit_politics -113.407
+    ## 17    subreddit_The_Donald -141.081
+    ## 18 subreddit_todayilearned  243.961
 
-Looking at the slope coeffiecents for our selected model's variables of `gilded`, `num_comments`, `stickied`, and `sent_class`, we can analyze the following. For every one gilded point a Reddit post receives, the score goes up by 4,622.4, given that all other variables remain constant. This makes sense since user really must like a post if they're willing to pay a gold donation to the creator. For every one comment the Reddit post recieves, the score goes by 3.9, given that all other variables remain constant. For when a post gets stickied by the moderators of the subreddits, the score goes down by 144.3, given that all other variables remain constant. This is an interesting analysis because we would expect a post that gets attention from the moderators and gets placed at the top of the feed would recieve a higher score but apparently that is not the case. Lastly, when a post's title is of neutral sentiment,
+Looking at the slope coeffiecents for our selected model's variables of `gilded`, `num_comments`, `stickied`, and `sent_class`, we can analyze the following. For every one gilded point a Reddit post receives, the score goes up by 4,622, given that all other variables remain constant. This makes sense since user really must like a post if they're willing to pay a gold donation to the creator. For every one comment the Reddit post recieves, the score goes by 3.9, given that all other variables remain constant. For when a post gets stickied by the moderators of the subreddits, the score goes down by 144.3, given that all other variables remain constant. This is an interesting analysis because we would expect a post that gets attention from the moderators and gets placed at the top of the feed would recieve a higher score but apparently that is not the case. Lastly, when a post's title is of neutral sentiment, the post's score goes down by 6.7 and if the post's title is of positive sentiment, the post's score goes down by 8.
 
-    ## [1] 0.17
-
-Discussion
-----------
+We find an R<sup>2</sup> value of `r2`, which means that the model can only explain 17.53% of the variance of the post scores. However, this may not be too surprising, since the scores definitely do not follow a multivariate linear model. Nor do any of the predictor variables include much information about the content of the post itself, since the text is not included in the model at all. We think that including the actual text information may help us improve our model. To do this, we need to encode the title's text into numeric variables, where each unique word has its own column. The package `tm` lets us create such a representation, also called document-term matrix. First, we clean up the text data by converting
 
 TODO: Discuss results
 
