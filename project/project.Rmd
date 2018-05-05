@@ -3,7 +3,9 @@ title: "What makes a popular Reddit post?"
 author: "InterstellR"
 date: "May 2, 2018"
 bibliography: bibliography.bib
-output: github_document
+output:
+  html_document:
+    keep_md: true
 ---
 
 ```{r setup, include=FALSE}
@@ -28,19 +30,19 @@ posts <- read_csv("../data/reddit.csv")
 
 ## Introduction
 
-Reddit is a social news platform that derives its content from posts made by users from all over the world and is also known as "the front page of the internet." These post can range from cute cat photos to serious news about our political system. Reddit's users truly represent individuals from different backgrounds, opinions, and places. People can upload their pictures, thoughts, and opinions, and other users give them feedback in the form of comments and votes. Posts with the most likes appear more towards the top of the website and therefore get more attention. Reddit is divided into thematic categories called subreddits and also allows for sorting by top posts, new posts, controversial posts, and criteria.
+The website Reddit, also known as "the front page of the internet," is a social news platform that derives its content from posts made by users from all over the world. The post can range from cute cat photos to serious news about our political system. Reddit's users represent individuals from different backgrounds, opinions, and places. People can upload their pictures, thoughts, and opinions, and other users give them feedback in the form of comments and votes. Posts with the most likes appear more towards the top of the website and therefore get more attention. Reddit is divided into thematic categories called subreddits and also allows for sorting by top posts, new posts, controversial posts, and criteria.
 
 #### Research Question
 
-Coincidentally, our team is made up of avid Reddit fans. All three of us are constantly checking it for interesting, insightful, and funny posts. Given that Reddit receives thousands of posts per day and the little time in the day we have to check Reddit, we all usually only check the "popular" feed. So, we thought that we should learn more about the site we know and love. Specifically, we want to analyze what makes a Reddit post popular.
+Coincidentally, our team is made up of avid Reddit fans. All three of us are constantly checking it for interesting, insightful, and funny posts. Given that Reddit receives thousands of posts per day and the little time in the day we have to check Reddit, we all usually only check the "popular" feed. So, we thought that we should learn more about the site we know and love. Specifically, we want to analyze what exactly makes a Reddit post popular.
 
 #### Data Set
 
-We found a dataset of Reddit posts from December 2017 published by Google BigQuery. In the full dataset, there were over 10 million entries, but we decided to focus on a random sample of 1 million due to computation and memory constraints. Each row in the dataset represents a post made by a user. The data set contains `r ncol(posts)` variables, all of which are explained in the accompanying README. Some of the ones we are most interested in are `num_comments`, which is the number of comments for the post, `stickied`, which indicates whether the post has been chosen to appear at the very top of a subreddit, `over_18`, which indicates whether users need to be 18 in order to view it, `gilded`, which denotes the number of [Reddit Gold](https://www.reddit.com/gold/about/) donations the poster received for the post, as well as `title`, `subreddit`, and `score`. The post's score will be a primary focus of our analysis and represents the difference between the total number of upvotes and downvotes the post received. A higher score means a more popular post.
+We found a dataset of Reddit posts from December 2017 published on Google BigQuery. In the full dataset, there were over 10 million entries, but we decided to focus on a random sample of 1 million due to constrained computation and memory resources. Each row in the dataset represents a post made by a user. The data set contains `r ncol(posts)` variables, all of which are explained in the accompanying data dictionary. Some of the ones we are most interested in are `num_comments`, which is the number of comments for the post, `stickied`, which indicates whether the post has been chosen to appear at the very top of a subreddit, `over_18`, which indicates whether users need to be 18 in order to view it, `gilded`, which denotes the number of [Reddit Gold](https://www.reddit.com/gold/about/) donations the poster received for the post, as well as `title`, `subreddit`, and `score`. The post's score will be a primary focus of our analysis and represents the difference between the total number of upvotes and downvotes the post received. The higher the score, the more popular the post.
 
 ## Exploring Term Frequencies
 
-We all spend most of our time browsing the front page of Reddit, and do not know much about the various subreddits yet. Hence, we want to start by finding out what the most popular ones are and gain insights into what the posts in each one are about. As a measure of a subreddit's popularity, we decide to use the cumulative score of all of its posts. The plot below shows the nine subreddits with the highest resulting totals.
+We all spend most of our time browsing the front page of Reddit and do not know much about the various subreddits yet. Hence, we want to start by finding out what the most popular ones are and gain insights into what the posts in each one are about. As a measure of a subreddit's popularity, we decide to use the cumulative score of all of its posts. The plot below shows the nine subreddits with the highest resulting totals.
 
 ```{r active-subreddits}
 popular_subs <- posts %>%
@@ -90,7 +92,7 @@ ggplot(tidy_titles, aes(x = order, y = n, fill = subreddit)) +
   geom_col(show.legend = FALSE) +
   facet_wrap(~subreddit, scales = "free") +
   labs(
-    title = "Most frequent words within various subreddits",
+    title = "Most frequent words within popular subreddits",
     subtitle = "in December 2017",
     x = "",
     y = "Count"
@@ -108,7 +110,7 @@ ggplot(tidy_titles, aes(x = order, y = n, fill = subreddit)) +
   theme(panel.grid.major.y = element_blank())
 ```
 
-The results are interesting because it seems like the top subreddits are very diverse. As we expected, posts in `The_Donald` mostly talk about Donald Trump, Obama, and fake news, whereas posts in `gaming` unsurprisingly talk about games, trailers, and apparently the game `DayZ`. Posters in `funny` appear to like sharing links, seeing as the words "https" and "t.co" are very frequent, and `dankmemes` is all about Ajit Pai, who is the chairman of the FCC, as well as net neutrality. The `aww` subreddit frequently mentions cats, dogs, and babies, and overall, people seem to mention Christmas frequently, which makes sense given that these posts are from December.
+The results are interesting because it seems like the top subreddits are very diverse. As we expected, posts in `The_Donald` mostly talk about Donald Trump, Obama, and fake news, and posts in `gaming` unsurprisingly talk about games, trailers, and apparently the game DayZ. Posters in `funny` appear to like sharing links, seeing as the words "https" and "t.co" are very frequent, and `dankmemes` is all about Ajit Pai, who is the chairman of the FCC, as well as net neutrality. The `aww` subreddit frequently mentions cats, dogs, and babies, and overall, people seem to mention Christmas frequently, which makes sense given that these posts are from December.
 
 ## Sentiment Analysis
 
@@ -139,7 +141,7 @@ most_neg_post <- posts %>%
   pull(title)
 ```
 
-We find that the average sentiment score of the posts is `r mean(posts$sentiment)` with a large standard deviation of `r sd(posts$sentiment)`. Interestingly, the title with the most positive sentiment is "`r most_pos_post`," which is a result of the word "ha" having a sentiment score of 2. We will not show the most negative post here because it contains a lot of profanity. Next, let's add an indicator variable `sent_class` to the dataframe that is "pos" if the sentiment score is positive, "neg" if the sentiment score is negative, and "neutral" if it is 0.
+We find that the average sentiment score of the posts is `r mean(posts$sentiment)` with a large standard deviation of `r sd(posts$sentiment)`. Interestingly, the title with the most positive sentiment is "`r most_pos_post`" which is a result of the word "ha" having a high sentiment score of 2. We will not show the most negative post here because it contains too much profanity. Next, let's add an indicator variable `sent_class` to the dataframe that is "pos" if the sentiment score is positive, "neg" if the sentiment score is negative, and "neutral" if it is 0.
 
 ```{r sent-class}
 posts <- mutate(posts, sent_class = case_when(
@@ -153,7 +155,7 @@ num_neg <- filter(posts, sent_class == "neg") %>% nrow()
 num_neutral <- filter(posts, sent_class == "neutral") %>% nrow()
 ```
 
-It turns out that there are a total of `r num_pos` positive posts, `r num_neg` negative posts, and `r num_neutral` neutral posts in the dataset, provided that our method of determining sentiment is accurate. Let us examine a few posts from the positive and negative category to see whether the results make sense.
+It turns out that there are a total of `r comma_format()(num_pos)` positive posts, `r comma_format()(num_neg)` negative posts, and `r comma_format()(num_neutral)` neutral posts in the dataset, provided that our method of determining sentiment is accurate. Let us examine a few posts from the positive and negative categories to see whether the results make sense.
 
 ```{r pos-neg-examples}
 # Look at positive posts
@@ -168,7 +170,7 @@ posts %>%
   head(3)
 ```
 
-It appears that the sentiment analysis results match our intuition -- the positively classified titles talk about "best drafts ever" and "obvious benefits," and the negatively classified titles talk about a technical problem with some video game and fears. We are interested in common positive and common negative words in the dataset, in order to possibly use these as features for our score prediction model. The plot below shows the ten words of each class with the most contribution to overall positivity and negativity.
+It appears that the sentiment analysis results match our intuition -- the positively classified titles talk about "best drafts ever" and "obvious benefits," and the negatively classified titles talk about a technical problem with a video game and fears. We are interested in common positive and common negative words in the dataset in order to possibly use these as features for our score prediction model. The plot below shows the ten words of each class with the most contribution to overall positivity and negativity.
 
 ```{r plot-sentiments}
 tidy_posts <- posts %>%
@@ -201,20 +203,22 @@ neg_words <- mutate(
 )
 rbind(pos_words, neg_words) %>%
   mutate(word = reorder(word, n)) %>%
-  ggplot(aes(x = word, y = n, fill = polarity)) +
+  ggplot(aes(x = word, y = n / 1000, fill = polarity)) +
   geom_col() +
   labs(
     title = "Most common positive and negative words",
     subtitle = "using sentiments from the AFINN lexicon",
+    x = "",
     y = "Count",
     fill = "Polarity"
   ) +
+  scale_y_continuous(labels = unit_format("K")) +
   scale_fill_discrete(labels = c("negative", "positive")) +
   coord_flip() +
   theme_minimal()
 ```
 
-Now, we can finally test our hypothesis. The null hypothesis and the alternative hypothesis are as follows.  
+It appears that the most common negative words are "no", "bad", and "hard", whereas the most common positive words are "like", "help", and "best". This seems reasonable, so we can finally test our hypothesis. The null hypothesis and the alternative hypothesis are as follows.  
 
 H0: The mean post score for negative posts is equal to the mean post score of positive posts.  
 HA: Negative posts have a higher mean score than positive posts.  
@@ -235,18 +239,16 @@ mean_score_neg <- posts %>%
 diff_mean_score <- mean_score_neg - mean_score_pos
 ```
 
-We find that in our sample, negative posts have an average score which is `r diff_mean_score` higher than positive posts. Next, let's figure out whether this difference could be due to chance using bootstrapping with permutation.
+We find that in our sample, negative posts have an average score which is `r diff_mean_score` higher than positive posts. Next, let's figure out whether this difference could be due to chance, using bootstrapping with permutation. The resulting null distribution of the differences in means in shown below.
 
 ```{r null-dist}
 null_dist <- posts %>%
   filter(sent_class %in% c("pos", "neg")) %>%
   specify(score ~ sent_class) %>%
   hypothesize(null = "independence") %>% 
-  generate(reps = 10, type = "permute") %>% 
+  generate(reps = 1000, type = "permute") %>% 
   calculate(stat = "diff in means", order = c("neg", "pos"))
 ```
-
-The resulting null distribution of the differences in means in shown below.
 
 ```{r plot-null-dist}
 ggplot(null_dist, aes(x = stat)) +
@@ -270,7 +272,7 @@ p_value <- null_dist %>%
 
 Using a one-sided hypothesis test, we find a p-value of `r p_value`. Using a significance level of 5%, we can infer that since our p-value is less than the significance level, we can reject the null hypothesis and conclude that *negative posts do indeed have a higher average mean score than positive posts*.
 
-## Cats vs. Dogs
+## Dogs vs. Cats
 
 A hotly debated question among us is whether dog or cat posts are more popular. We aim to once and for all determine which one is better using a hypothesis test. Our hypothesis is that the mean score of a post depends on whether the post mentions dogs or cats. We only look at posts which mention either of the two, but not both. First, we need to create two new variables called `dog` and `cat` in order to determine whether a title contains the word "cat" or "dog" or some variation of either term.
 
@@ -335,21 +337,19 @@ mean_score_cat <- posts %>%
 diff_mean_score2 <- mean_score_dog - mean_score_cat
 ```
 
-We find that, in our sample, posts that mention dogs have an average score which is `r diff_mean_score2` higher than those that mention cats. Next, let's figure out whether this difference could be due to chance using bootstrapping with permutation.
+We find that, in our sample, posts that mention dogs have an average score which is `r diff_mean_score2` higher than those that mention cats. Next, let's figure out whether this difference could be due to chance using bootstrapping with permutation. The resulting null distribution of the differences in means in shown below.
 
 ```{r null-dist2}
 null_dist2 <- posts %>%
   filter(animal %in% c("dog", "cat")) %>%
   specify(score ~ animal) %>%
   hypothesize(null = "independence") %>% 
-  generate(reps = 10, type = "permute") %>% 
+  generate(reps = 1000, type = "permute") %>% 
   calculate(stat = "diff in means", order = c("dog", "cat"))
 ```
 
-The resulting null distribution of the differences in means in shown below.
-
 ```{r plot-null-dist2}
-ggplot(null_dist, aes(x = stat)) +
+ggplot(null_dist2, aes(x = stat)) +
   geom_density() +
   labs(
     title = "Null distribution of difference in mean scores",
@@ -372,7 +372,7 @@ We can clearly see that we have a p-value of `r p_value2`. This means that we ca
 
 ## Modeling Popularity
 
-Our main resarch goal is to find out what makes a post popular. Hence, we want to build a model that can predict the score of a given post from several of its attributes. Before doing so, we want to visualize and summarize the distribution of the posts' scores. We exclude scores higher than the 90th percentile in this visualization because these posts are scores far greater than most others, making it difficult to visualize the shape of the distribution.
+Our main research goal is to find out what makes a post popular. Hence, we want to build a model that can predict the score of a given post from several of its attributes. Before doing so, we want to visualize and summarize the distribution of the posts' scores. We exclude scores higher than the 90th percentile in this visualization because these posts have scores far greater than most others, making it difficult to visualize the shape of the distribution.
 
 ```{r score-dist}
 score_q90 <- quantile(posts$score, probs = 0.90)
@@ -402,7 +402,7 @@ top_post_link <- posts %>%
   pull(permalink)
 ```
 
-It appears that the post scores follow something resembling a beta distribution. The average score is `r mean(posts$score)` and the standard deviation is `r sd(posts$score)`. The highest score by any post in December 2017 is `r max_score` by [this](http://www.reddit.com/r/gaming/comments/7m13gd/as_a_teen_in_the_80s_my_conservative_godfearing/) post, which is about the game Dungeons & Dragons.
+It appears that the post scores follow something resembling a beta distribution or exponential decay. The average score is `r mean(posts$score)` and the standard deviation is `r sd(posts$score)`. The highest score by any post in December 2017 is `r max_score` by [this](http://www.reddit.com/r/gaming/comments/7m13gd/as_a_teen_in_the_80s_my_conservative_godfearing/) post, which is about the game Dungeons & Dragons. By far the most common score is 1, which is probably a result of the ability to upvote your own post.
 
 #### Feature Engineering
 
@@ -421,10 +421,12 @@ posts <- mutate(posts, title_length = nchar(title))
 We would like to include the `subreddit` variable, but there are `r unique(posts$subreddit) %>% length()` levels which will increase the model complexity too much. Hence, we only include indicator variables for the nine most popular subreddits we explored earlier as well as one additional level called "other".
 
 ```{r subreddit-indicators}
-posts <- mutate(posts, subreddit_ = case_when(
+posts <- mutate(posts, sub_ = case_when(
   subreddit %in% popular_subs$subreddit ~ subreddit,
   TRUE ~ "other"
 ))
+# Reorder levels
+posts <- mutate(posts, sub_ = factor(sub_, levels = c("other", popular_subs$subreddit)))
 ```
 
 We will also include the two variables we created earlier -- `sent_class` and `animal` -- as well as `gilded`, `stickied`, and `num_comments`. Next, we remove posts where the score is hidden or any of the predictor variables are missing.
@@ -439,40 +441,62 @@ posts <- filter(
   !is.na(num_comments),
   !is.na(sent_class),
   !is.na(animal),
-  !is.na(subreddit_),
+  !is.na(sub_),
   hide_score == "false"
 )
 ```
 
-This leaves us with `r nrow(posts)` posts out of the original 1,000,000.
+This leaves us with `r comma_format()(nrow(posts))` posts out of the original 1,000,000.
 
 #### Modeling
 
 Our first approach will be a linear model, optimized using backward selection by AIC.
 
-```{r lm-score}
-full_model <- lm(score ~ uptime + title_length + gilded + stickied + num_comments + sent_class + animal + subreddit_, data = posts)
+```{r lm-score, message=FALSE}
+full_model <- lm(score ~ uptime + title_length + gilded + stickied + num_comments + sent_class + animal + sub_, data = posts)
 best_model <- step(full_model, scope = . ~ . ^ 2, direction = "backward")
 ```
 
 ```{r tidy-lm}
-tidy(best_model) %>% select(term, estimate)
+coeffs <- tidy(best_model) %>%
+  select(term, estimate)
+intercept <- filter(coeffs, term == "(Intercept)") %>% pull(estimate)
+coef_title_length <- filter(coeffs, term == "title_length") %>% pull(estimate)
+coef_gilded <- filter(coeffs, term == "gilded") %>% pull(estimate)
+coef_stickiedtrue <- filter(coeffs, term == "stickiedtrue") %>% pull(estimate)
+coef_sent_classpos <- filter(coeffs, term == "sent_classpos") %>% pull(estimate)
+coef_sent_classneg <- filter(coeffs, term == "sent_classneg") %>% pull(estimate)
+coef_num_comments <- filter(coeffs, term == "num_comments") %>% pull(estimate)
+coef_animaldog <- filter(coeffs, term == "animaldog") %>% pull(estimate)
+coef_animalcat <- filter(coeffs, term == "animalcat") %>% pull(estimate)
+coef_sub_the_donald <- filter(coeffs, term == "sub_The_Donald") %>% pull(estimate)
+coef_sub_dankmemes <- filter(coeffs, term == "sub_dankmemes") %>% pull(estimate)
+coef_sub_funny <- filter(coeffs, term == "sub_funny") %>% pull(estimate)
+coef_sub_gaming <- filter(coeffs, term == "sub_gaming") %>% pull(estimate)
+coef_sub_pics <- filter(coeffs, term == "sub_pics") %>% pull(estimate)
+coef_sub_gifs <- filter(coeffs, term == "sub_gifs") %>% pull(estimate)
+coef_sub_aww <- filter(coeffs, term == "sub_aww") %>% pull(estimate)
+coef_sub_funny <- filter(coeffs, term == "sub_funny") %>% pull(estimate)
+coef_sub_til <- filter(coeffs, term == "sub_todayilearned") %>% pull(estimate)
+coef_sub_politics <- filter(coeffs, term == "sub_politics") %>% pull(estimate)
 ```
 
-Looking at the slope coefficients for our selected model's variables of `gilded`, `num_comments`, `stickied`, and `sent_class`, we can analyze the following. For every one gilded point a Reddit post receives, the score goes up by 4,622, given that all other variables remain constant. This makes sense since user really must like a post if they're willing to pay a gold donation to the creator. For every one comment the Reddit post recieves, the score goes by 3.9, given that all other variables remain constant. For when a post gets stickied by the moderators of the subreddits, the score goes down by 144.3, given that all other variables remain constant. This is an interesting analysis because we would expect a post that gets attention from the moderators and gets placed at the top of the feed would recieve a higher score but apparently that is not the case. Lastly, when a post's title is of neutral sentiment, the post's score goes down by 6.7 and if the post's title is of positive sentiment, the post's score goes down by 8. 
+The coefficient of the predictor variables give us insights into how these variables affect a post's score. For instance, the coefficient of `gilded`, `r coef_gilded`, tells us that for every gild that a post receives, the average post score is `r coef_gilded` higher, assuming all other variables stay constant. This makes sense since user really must like a post if they're willing to pay a gold donation to the creator. Furthermore, we notice that a posts title length does not have too much of an effect on its score, seeing as we would predict the score to decrease by only about `r coef_title_length` for each additional character in the title, again assuming that all else stays constant. We also find that sticky posts have an average score which is `r coef_stickiedtrue` lower than non-sticky posts. Mentioning dogs or cats in the title increases the average score by `r coef_animaldog` and `r coef_animalcat`, respectively, compared to not doing so at all. We can also see that the subreddits `gifs`, `todayilearned`, `dankmemes`, and `aww` have the highest average scores compared to subreddits within the `other` category, assuming all other variables stay constant. All of the other popular subreddits also have positive coefficients in the linear model, which makes sense since they are the most popular. Note that the only variable eliminated during the backward selection process is `uptime`. This means that the time that a post has been up for may not be a good predictor of its score along with the other variables. This may seem a bit confusing since the longer a post has been up, the more chance for exposure it has. A possible explanation for this is that posts only have a small time window to gain traction, only in the short time after they are released. For instance, they may get noticed when users sort all Reddit posts by "most recent." After a while, whether a posts gets a lot of upvotes or not, it may eventually lose traction and disappear from people's radar. This is just a possible explanation, and we could also argue that perhaps `uptime` includes redundant information already conveyed by the other predictors, even though it is not immediately obvious which one. The final linear model is:  
+
+$\hat{score}$ = `r intercept` + `r coef_title_length``title_length` + `r coef_gilded``gilded` + `r coef_stickiedtrue``stickiedtrue` + `r coef_num_comments``num_comments` + `r coef_sent_classpos``sent_classpos` + `r coef_sent_classneg``sent_classneg` + `r coef_animaldog``animaldog` + `r coef_animalcat``animalcat` + `r coef_sub_the_donald``sub_the_donald` + `r coef_sub_aww``sub_aww` + `r coef_sub_politics``sub_politics` + `r coef_sub_pics``sub_pics` + `r coef_sub_gaming``sub_gaming` + `r coef_sub_funny``sub_funny` + `r coef_sub_gifs``sub_gifs` + `r coef_sub_til``sub_todayilearned` + `r coef_sub_dankmemes``sub_dankmemes`.
 
 ```{r getting-r2}
 r_squared1 <- glance(best_model) %>%
   pull(r.squared)
 ```
 
-We find an R^2^ value of `r r_squared1`, which means that the model can only explain `r r_squared1 * 100`% of the variance of the post scores. However, this may not be too surprising, since the scores definitely do not follow a multivariate linear model. Nor do any of the predictor variables include much information about the content of the post itself, since the text is not included in the model at all. We think that including the actual text information may help us improve our model. To do this, we need to encode the title's text into numeric variables, where each unique word has its own column. The package `tm` lets us convert our tidy create such a representation, also called document-term matrix. Note that the string in each row represents the unique ID of each post.
+We find that the model has an R^2^ value of `r options(digits = 4)``r r_squared1``r options(digits = 2)`, which means that the model can only explain `r r_squared1 * 100`% of the variance of the post scores. However, this may not be too surprising, since the scores definitely do not follow a multivariate linear model. Nor do any of the predictor variables include much information about the content of the post itself, since the text is not included in the model at all. We think that including the actual text information may help us improve our model. To do this, we need to encode the title's text into numeric variables, where each unique word has its own column. The package `tm` lets us convert our tidy create such a representation, also called document-term matrix. Note that the string in each row represents the unique ID of each post.
 
 ```{r tdm}
 posts <- tidy_posts %>%
   anti_join(stop_words, by = "word") %>%
   mutate(value = 1) %>%
-  cast_dtm(id, word, value, weighting = weightTfIdf) %>%
+  cast_dtm(id, word, value, weighting = weightBin) %>%
   removeSparseTerms(0.995) %>%
   as.matrix() %>%
   as.data.frame() %>%
@@ -480,9 +504,9 @@ posts <- tidy_posts %>%
   inner_join(posts, ., by = "id", suffix = c("", ".word"))
 ```
 
-Now, we have a total of `r ncol(posts)` variables in the dataframe, where the new ones represents the tf-idf weight of a unique word in the title of the post. Note that we had to eliminate many of the terms in order for it to fit into memory. We did this using the `removeSparseTerms` function from `tm`, which removes terms from the matrix until it has a percentage of elements which are zero that is at least 99.5%. Let's again build a linear model using backwords selection and see whether the new variables improve the results.
+Now, we have a total of `r ncol(posts)` variables in the dataframe, where the new ones are binary indicators of a unique word in the title of the post. Note that we had to eliminate many of the terms in order for it to fit into memory. We did this using the `removeSparseTerms` function from `tm`, which removes terms from the matrix until it has a percentage of elements which are zero that is at least 99.5%. Let's again build a linear model using backwords selection and see whether the new variables improve the results.
 
-```{r lm-text}
+```{r lm-text, message=FALSE}
 posts <- select(posts, -one_of("created_utc", "subreddit", "author", "domain", "url", "ups", "downs", "title", "selftext", "saved", "id", "from_kind", "from", "retrieved_on", "over_18", "thumbnail", "subreddit_id", "hide_score", "link_flair_css_class", "author_flair_css_class", "archived", "is_self", "from_id", "permalink", "name", "author_flair_text", "quarantine", "link_flair_text", "distinguished", "animal"))
 full_model2 <- lm(score ~ ., data = posts)
 best_model2 <- step(full_model2, direction = "forward")
@@ -490,10 +514,58 @@ r_squared2 <- glance(best_model2) %>%
   pull(r.squared)
 ```
 
-We find that the resulting R^2^ is `r r_squared2`, which is not much better than the previous model. It appears that adding the new variables has not helped much. However, maybe a linear model is simply not the right choice.
+Note that we performed forward selection here because the feature space is simply too large for backward selection. We find that the resulting R^2^ is `r options(digits = 4)``r r_squared2``r options(digits = 2)`, which is not much better than the previous model. It appears that adding the new variables has not helped much. Maybe a linear model is simply not the right choice. However, we may be able to gain some insights from the coefficients of the new variables. The following table shows the coefficients of words that have the highest absolute value.
 
-## Discussion
+```{r largest-coeffs}
+word_coeffs <- tidy(best_model2) %>%
+  select(term, estimate) %>%
+  filter(!(term %in% c("(Intercept)", "num_comments", "gilded", "stickiedtrue", "sentiment", "sent_classpos", "sent_classneg", "dogyes", "catyes", "uptime", "title_length", "sub_The_Donald", "sub_aww", "sub_politics", "sub_pics", "sub_gaming", "sub_funny", "sub_gifs", "sub_todayilearned", "sub_dankmemes")))
+# Highest coefficients
+word_coeffs %>%
+  arrange(desc(estimate)) %>%
+  head(5)
+# Lowest coefficients
+word_coeffs %>%
+  arrange(estimate) %>%
+  head(5)
+# Extract coefficients
+coef_news <- filter(word_coeffs, term == "news") %>% pull(estimate)
+coef_watch <- filter(word_coeffs, term == "watch") %>% pull(estimate)
+coef_home <- filter(word_coeffs, term == "home") %>% pull(estimate)
+coef_december <- filter(word_coeffs, term == "december") %>% pull(estimate)
+coef_game <- filter(word_coeffs, term == "game") %>% pull(estimate)
+coef_question <- filter(word_coeffs, term == "question") %>% pull(estimate)
+```
 
-## Conclusion
+We can see that the word with the highest coefficient, `r coef_news`, is "news", which indicates that if all other variables stay constant, titles with the word "news" in them are on average `r coef_news` higher than those who don't. Likewise, the words "watch" and "home" also have fairly large positive coefficients, indicating that talking about them may lead to a higher score assuming all other variables stay constant. Additionally, we can see that post's with the word "december" in their title have an average score which is `r abs(coef_december)` lower than those who don't. Similarly, titles that include the word "game" or "question" have average scores that are `r abs(coef_game)` and `r abs(coef_question)` lower than those who don't, respectively.
+
+## Discussion and Conclusions
+
+In our analysis, we showed the following insights. Note that, of course, all of these findings carry a list of assumptions with them, which have been discussed in their respective sections.
+
+- The nine most popular subreddits are unique and deal with a wide variety of interesting topics  
+- Titles with a negative sentiment polarity have a higher mean score than those with positive sentiment polarity (p = `r p_value`)  
+- Posts about dogs have a higher mean score than posts about cats (p = `r p_value2`)  
+- Posting in /r/gifs is a good way to receive a high score  
+- Posting about December, games, and asking questions results in low average scores, but talking about news, watching, and time   results in high average scores  
+- Our linear model is able to explain `r r_squared1 * 100`% of the variance in post scores without text features, and `r r_squared2 * 100`% of the variance in post scores with text features
+
+The data set we retrieved from reddit was extremely rich and interesting to analyze because of its thematic variety and enormous amount of entries from a diversity of people. We would like to be able to generalize these findings and make conclusions about Reddit posts in general, but to do that, we would need to know that the posts' content is independent of the time of their posting being December 2017. However, we are certain that this is not the case. We already saw that many posts were related to Christmas in the word frequency analysis -- something that certainly would not occur during most other months of the year. Furthermore, a large part of Reddit is about events and news that are current at the time, such as the debates about net neutrality that were going on during the month that the dataset is from. In order to make more general conclusions, we need to expand the range of times of the dataset to at least a full year, even if we only analyze a random sample of the same size we did now.
+
+With regards to our methods for the hypothesis tests, we realize that looking at the mean score may not be an optimal choice. As we saw earlier, the distribution of post scores is extremely skewed and has many extreme outliars, and since the mean is not a robust statistic, these will heavily affect it. If, say, for example, we have a few posts about cats became incredibly popular and gained extreme scores, this would drastically increase the mean score for cat posts, but may not necessarily be indicative of the general scores for cats. However, if we instead looked at the median score, we would not achieve very interesting results because there are too many posts with a score of 1, which means that the median for either cats or dogs will most likely always be 1, too. In the future, we may look into coming up with a new statistic, such as the mean of the lower 90% of scores, in order to obtain a better measure of a typical score. The same goes for the analysis on positive and negative sentiments, too. While our p-values show that our results are factually accurate, i.e. the mean scores really are higher, the main question to ask is whether mean score is a good indicator of a typical score, and we believe that it is not.
+
+While the results of the text analysis were interesting, our explorations were limited by memory and computation constraints. The full document-term matrix had over 300,000 terms, and while it fit into memory as a sparse matrix, we were not able to convert it to a dataframe that we could build a model with because that would have taken up too much space. In the future, we may look into doing more sophisticated term selection for our document-term matrix by using a frequency threshold, lemmatization, better text cleaning, and possibly automated grammar correction. We would also use a machine with more memory or possibly rent a computing cluster to speed up the computation time. We noticed that simply loading the dataset took about a minute on our computers, and unnesting the tokens to create the dataset of individual words was also very time costly. Using better resources, we would be able to look at more words and variables and possibly create a model with a higher R^2^.
+
+However, the thing we would want to do most if we had to repeat the analysis is experiment with non-linear models such as Support Vector Machines. We think that multivariate linear models are not a great way to predict post scores on Reddit because their distribution is not linear. We might also be able to try to predict the log of the score or try to modify the score variable somehow, but we found that even the log of the score appears to follow an exponential distribution, and analyzing the log would make some results less easily interpretable.
+
+Regardless, we believe that our statistical methods were executed correctly and our results are accurate to the extent of the assumptions we made. The dataset we analyzed was reliable, seeing as all entries and statistics we observed seemed reasonable with respect to our Reddit knowledge. To conclude, we would like to create a list of tips for up-and-coming Reddit posters, fully knowing that none of these tips can guarantee that a post will gain popularity, since it is almost impossible to follow all of the constraints we impose on our findings and the findings only pertain to December 2017 anyway. Nonetheless, we think these will be interesting to experiment with and possibly explore in future research.
+
+1. Be super negative in your post  
+2. If you want to post a picture of an animal, choose dogs over cats  
+3. Try posting in the subreddit /r/gifs  
+4. Don't talk about December or games, and don't ask any questions  
+5. Instead, talk about news, home, and things you like to watch  
+
+And finally, to all data scientists: **don't use a linear model to predict reddit post scores**.
 
 ## References
