@@ -10,15 +10,15 @@ Reddit is a social news platform owned by Conde Nast that derives its content fr
 
 TODO: Expand introduction
 
-### Data Set
-
-The data set is comprised of Reddit posts from December 2017, since it was the latest data set we could find and wanted to keep up with the most recent trends. Also, it will be interesting to explore themes related to Christmas. We retrieved it from the Google BigQuery API. The data set contains 33 variables and 1000000 observations.
-
-Our dataset is made up of 33 variables but for this project, we will only be looking at these variables: `subreddit` (categorical, name of the subreddit the post belongs to), `num_comments` (numerical, the number of comments on the post),`score` (numerical, popularity score of post), `ups` (numerical, amount of up votes the post recieved), `downs` (numerical, amount of down votes the post recieved), `title` (categorical, the title of the post), `selftext` (categorical, the text body on the post), `gilded` (numerical, amount of gold reddit donations from other users), `over_18` ( categorical, true or fale if post is only appropriate for users over the age of 18), and `stickied` (categorical, whether or not post was stickied by moderators of the post's subreddit). The rest of the descriptions for the other variables can be found in our data folder.
-
-### Research Question
+#### Research Question
 
 Coincidentally, our team is made up of avid Reddit fans. All three of us are constantly checking it for interesting, insightful, and funny posts. Given that Reddit recieves thousands of posts per day and the little time in the day we have to check Reddit, we all usually only check the "popular" feed. So, it got us thinking that we should learn more about the site we use pretty frequently. Specifically, we want to analyze what makes a Reddit post popular.
+
+#### Data Set
+
+The data set is comprised of Reddit posts from December 2017, since it was the latest data set we could find and wanted to keep up with the most recent trends. Also, it will be interesting to explore themes related to Christmas. We retrieved it from the Google BigQuery API. The data set contains 33 variables and 1,000,000 observations.
+
+Our dataset is made up of 33 variables but for this project, we will only be looking at these variables: `subreddit` (categorical, name of the subreddit the post belongs to), `num_comments` (numerical, the number of comments on the post),`score` (numerical, popularity score of post), `ups` (numerical, amount of up votes the post recieved), `downs` (numerical, amount of down votes the post recieved), `title` (categorical, the title of the post), `selftext` (categorical, the text body on the post), `gilded` (numerical, amount of gold reddit donations from other users), `over_18` ( categorical, true or fale if post is only appropriate for users over the age of 18), and `stickied` (categorical, whether or not post was stickied by moderators of the post's subreddit). The rest of the descriptions for the other variables can be found in our data folder.
 
 Exploring Term Frequencies
 --------------------------
@@ -62,14 +62,14 @@ It appears that the sentiment analysis results match our intuition -- the positi
 
 Now, we can finally test our hypothesis. The null hypothesis and the alternative hypothesis are as follows.
 
-H0: A post's score is independent of the title's sentiment polarity.
+H0: The mean post score for negative posts is equal to the mean post score of positive posts.
 HA: Negative posts have a higher mean score than positive posts.
 
 For this analysis, we will ignore posts with neutral sentiment and only focus on those with positive or negative sentiment polarity. Before we start, we need to verify whether all conditions for valid simulation based inference are met. Our "population" is the set of all Reddit posts in December 2017 and has a size of 10,567,492. Our sample is taken at random without replacement and has a size of 1,000,000. Since the sample size is less than 10% of the population size, the independence condition is therefore met. Additionally, we require more than 30 samples, which we also have.
 
 First, we calculate the observed difference in mean score between posts with negative and positive `sent_class`.
 
-We find that, in our sample, negative posts have an average score which is 12.48 higher than positive posts. Next, let's figure out whether this difference could be due to chance using bootstrapping with permutation.
+We find that in our sample, negative posts have an average score which is 12.48 higher than positive posts. Next, let's figure out whether this difference could be due to chance using bootstrapping with permutation.
 
 The resulting null distribution of the differences in means in shown below.
 
@@ -95,7 +95,7 @@ The resulting null distribution of the differences in means in shown below.
 
 ![](project_files/figure-markdown_github/plot-null-dist2-1.png)
 
-We can clearly see that we have a p-value of 0.14. This means that we can reject the null hypothesis and conclude that *dog posts indeed have a higher mean score than cat posts*.
+We can clearly see that we have a p-value of 0.2. This means that we can reject the null hypothesis and conclude that *dog posts indeed have a higher mean score than cat posts*.
 
 Modeling Popularity
 -------------------
@@ -106,17 +106,21 @@ Our main resarch goal is to find out what makes a post popular. Hence, we want t
 
 It appears that the post scores follow something resembling a beta distribution. The average score is 58.66 and the standard deviation is 1027.86. The highest score by any post in December 2017 is 166121 by [this](http://www.reddit.com/r/gaming/comments/7m13gd/as_a_teen_in_the_80s_my_conservative_godfearing/) post, which is about the game Dungeons & Dragons.
 
-### Feature Engineering
+#### Feature Engineering
 
 We would like to build a model that predicts a post's score from various features, so we need to decide which features we want to look at. We start by creating a variable that denotes the total uptime of the post, i.e. the difference between the time it was retrieved and the time it was created. Both of these quantitites are given as the number of seconds from a time origin, so we can simply compute the difference between the two and convert the result into hours, as that will be a more interpretable quantity.
 
 Next, we want to have a variable that denotes the length of the title as well as the body text of each post. Hence, we compute the number of characters in `title` and store it in a new variable `title_length`.
 
-We would like to include the `subreddit` variable, but there are 1000000 levels which will increase the model complexity drastically. Hence, we only include indicator variables for the nine most popular subreddits we explored earlier as well as one additional level called "other".
+We would like to include the `subreddit` variable, but there are 64531 levels which will increase the model complexity too much. Hence, we only include indicator variables for the nine most popular subreddits we explored earlier as well as one additional level called "other".
 
 We will also include the two variables we created earlier -- `sent_class` and `animal` -- as well as `gilded`, `stickied`, and `num_comments`. Next, we remove posts where the score is hidden or any of the predictor variables are missing.
 
-This leaves us with 995003 posts out of the original 1000000. Our first approach will be a linear model, optimized using backward selection by AIC.
+This leaves us with 995003 posts out of the original 1,000,000.
+
+#### Modeling
+
+Our first approach will be a linear model, optimized using backward selection by AIC.
 
     ## Start:  AIC=1.4e+07
     ## score ~ uptime + title_length + gilded + stickied + num_comments + 
@@ -167,11 +171,27 @@ This leaves us with 995003 posts out of the original 1000000. Our first approach
     ## 17    subreddit_The_Donald -141.081
     ## 18 subreddit_todayilearned  243.961
 
-Looking at the slope coeffiecents for our selected model's variables of `gilded`, `num_comments`, `stickied`, and `sent_class`, we can analyze the following. For every one gilded point a Reddit post receives, the score goes up by 4,622, given that all other variables remain constant. This makes sense since user really must like a post if they're willing to pay a gold donation to the creator. For every one comment the Reddit post recieves, the score goes by 3.9, given that all other variables remain constant. For when a post gets stickied by the moderators of the subreddits, the score goes down by 144.3, given that all other variables remain constant. This is an interesting analysis because we would expect a post that gets attention from the moderators and gets placed at the top of the feed would recieve a higher score but apparently that is not the case. Lastly, when a post's title is of neutral sentiment, the post's score goes down by 6.7 and if the post's title is of positive sentiment, the post's score goes down by 8.
+Looking at the slope coefficients for our selected model's variables of `gilded`, `num_comments`, `stickied`, and `sent_class`, we can analyze the following. For every one gilded point a Reddit post receives, the score goes up by 4,622, given that all other variables remain constant. This makes sense since user really must like a post if they're willing to pay a gold donation to the creator. For every one comment the Reddit post recieves, the score goes by 3.9, given that all other variables remain constant. For when a post gets stickied by the moderators of the subreddits, the score goes down by 144.3, given that all other variables remain constant. This is an interesting analysis because we would expect a post that gets attention from the moderators and gets placed at the top of the feed would recieve a higher score but apparently that is not the case. Lastly, when a post's title is of neutral sentiment, the post's score goes down by 6.7 and if the post's title is of positive sentiment, the post's score goes down by 8.
 
-We find an R<sup>2</sup> value of `r2`, which means that the model can only explain 17.53% of the variance of the post scores. However, this may not be too surprising, since the scores definitely do not follow a multivariate linear model. Nor do any of the predictor variables include much information about the content of the post itself, since the text is not included in the model at all. We think that including the actual text information may help us improve our model. To do this, we need to encode the title's text into numeric variables, where each unique word has its own column. The package `tm` lets us create such a representation, also called document-term matrix. First, we clean up the text data by converting
+We find an R<sup>2</sup> value of 0.18, which means that the model can only explain 17.53% of the variance of the post scores. However, this may not be too surprising, since the scores definitely do not follow a multivariate linear model. Nor do any of the predictor variables include much information about the content of the post itself, since the text is not included in the model at all. We think that including the actual text information may help us improve our model. To do this, we need to encode the title's text into numeric variables, where each unique word has its own column. The package `tm` lets us convert our tidy create such a representation, also called document-term matrix. Note that the string in each row represents the unique ID of each post.
 
-TODO: Discuss results
+Now, we have a total of 95 variables in the dataframe, where the new ones represents the tf-idf weight of a unique word in the title of the post. Note that we had to eliminate many of the terms in order for it to fit into memory. We did this using the `removeSparseTerms` function from `tm`, which removes terms from the matrix until it has a percentage of elements which are zero that is at least 99.5%. Let's again build a linear model using backwords selection and see whether the new variables improve the results.
+
+    ## Start:  AIC=1.3e+07
+    ## score ~ num_comments + gilded + stickied + sentiment + sent_class + 
+    ##     dog + cat + uptime + title_length + subreddit_ + video + 
+    ##     christmas + time + love + home + day + `7` + people + amp + 
+    ##     `2017` + `20` + guys + `12` + world + ps4 + bitcoin + reddit + 
+    ##     xbox + `3` + `5` + trump + `1` + `2018` + girl + december + 
+    ##     level + news + free + game + question + m4f + `18` + `17` + 
+    ##     white + https + t.co + `10` + keys + black + `2` + `4` + 
+    ##     games + business + online + pc + national + live + post + 
+    ##     play + found + top + buy + life + watch
+
+We find that the resulting R<sup>2</sup> is 0.18, which is not much better than the previous model. It appears that adding the new variables has not helped much. However, maybe a linear model is simply not the right choice.
+
+Discussion
+----------
 
 Conclusion
 ----------

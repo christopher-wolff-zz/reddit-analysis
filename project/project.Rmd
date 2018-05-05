@@ -74,7 +74,7 @@ ggplot(popular_subs, aes(x = reorder(subreddit, total_score), y = total_score / 
 We find that the nine most popular subreddits in descending order are `The_Donald`, `aww`, `politics`, `pics`, `gaming`, `funny`, `gifs`, `todayilearned`, and `dankmemes`. We may be able to intuit what most of these subreddits are about from their name alone, but we wanted to know more about the content and central topics in each of them. Therefore, we decided to analyze the most frequent terms in each of these subreddits with the help of the `tidytext` package. We want to focus on the text contained in the title of the posts since it is the first thing that is visible to the users. Furthermore, we decided to filter out stop words such as "the" and "a" because they naturally appear very frequently and do not convey much about the content of any one particular subreddit.
 
 ```{r tf-analysis}
-# count most frequent words for each subreddit
+# Count most frequent words for each subreddit
 tidy_titles <- posts %>%
   filter(subreddit %in% popular_subs$subreddit) %>%
   unnest_tokens(word, title) %>%
@@ -85,11 +85,11 @@ tidy_titles <- posts %>%
   ungroup() %>%
   arrange(subreddit, n) %>%
   mutate(order = row_number())
-# reorder subreddit variable by popularity
+# Reorder subreddit variable by popularity
 tidy_titles <- tidy_titles %>%
   left_join(popular_subs, by = "subreddit") %>%
   mutate(subreddit = reorder(subreddit, desc(total_score)))
-# plot results
+# Plot results
 ggplot(tidy_titles, aes(x = order, y = n, fill = subreddit)) +
   geom_col(show.legend = FALSE) +
   facet_wrap(~subreddit, scales = "free") +
@@ -246,7 +246,7 @@ null_dist <- posts %>%
   filter(sent_class %in% c("pos", "neg")) %>%
   specify(score ~ sent_class) %>%
   hypothesize(null = "independence") %>% 
-  generate(reps = 1000, type = "permute") %>% 
+  generate(reps = 10, type = "permute") %>% 
   calculate(stat = "diff in means", order = c("neg", "pos"))
 ```
 
@@ -346,7 +346,7 @@ null_dist2 <- posts %>%
   filter(animal %in% c("dog", "cat")) %>%
   specify(score ~ animal) %>%
   hypothesize(null = "independence") %>% 
-  generate(reps = 1000, type = "permute") %>% 
+  generate(reps = 10, type = "permute") %>% 
   calculate(stat = "diff in means", order = c("dog", "cat"))
 ```
 
@@ -408,7 +408,7 @@ top_post_link <- posts %>%
 
 It appears that the post scores follow something resembling a beta distribution. The average score is `r mean(posts$score)` and the standard deviation is `r sd(posts$score)`. The highest score by any post in December 2017 is `r max_score` by [this](http://www.reddit.com/r/gaming/comments/7m13gd/as_a_teen_in_the_80s_my_conservative_godfearing/) post, which is about the game Dungeons & Dragons.
 
-### Feature Engineering
+#### Feature Engineering
 
 We would like to build a model that predicts a post's score from various features, so we need to decide which features we want to look at. We start by creating a variable that denotes the total uptime of the post, i.e. the difference between the time it was retrieved and the time it was created. Both of these quantitites are given as the number of seconds from a time origin, so we can simply compute the difference between the two and convert the result into hours, as that will be a more interpretable quantity.
 
@@ -434,7 +434,7 @@ posts <- mutate(posts, subreddit_ = case_when(
 We will also include the two variables we created earlier -- `sent_class` and `animal` -- as well as `gilded`, `stickied`, and `num_comments`. Next, we remove posts where the score is hidden or any of the predictor variables are missing.
 
 ```{r clean-posts}
-clean_posts <- filter(
+posts <- filter(
   posts,
   !is.na(uptime),
   !is.na(title_length),
@@ -448,10 +448,14 @@ clean_posts <- filter(
 )
 ```
 
-This leaves us with `r nrow(clean_posts)` posts out of the original `r nrow(posts)`. Our first approach will be a linear model, optimized using backward selection by AIC.
+This leaves us with `r nrow(posts)` posts out of the original 1,000,000.
 
-```{r lm-popularity}
-full_model <- lm(score ~ uptime + title_length + gilded + stickied + num_comments + sent_class + animal + subreddit_, data = clean_posts)
+#### Modeling
+
+Our first approach will be a linear model, optimized using backward selection by AIC.
+
+```{r lm-score}
+full_model <- lm(score ~ uptime + title_length + gilded + stickied + num_comments + sent_class + animal + subreddit_, data = posts)
 best_model <- step(full_model, scope = . ~ . ^ 2, direction = "backward")
 ```
 
@@ -462,20 +466,37 @@ tidy(best_model) %>% select(term, estimate)
 Looking at the slope coefficients for our selected model's variables of `gilded`, `num_comments`, `stickied`, and `sent_class`, we can analyze the following. For every one gilded point a Reddit post receives, the score goes up by 4,622, given that all other variables remain constant. This makes sense since user really must like a post if they're willing to pay a gold donation to the creator. For every one comment the Reddit post recieves, the score goes by 3.9, given that all other variables remain constant. For when a post gets stickied by the moderators of the subreddits, the score goes down by 144.3, given that all other variables remain constant. This is an interesting analysis because we would expect a post that gets attention from the moderators and gets placed at the top of the feed would recieve a higher score but apparently that is not the case. Lastly, when a post's title is of neutral sentiment, the post's score goes down by 6.7 and if the post's title is of positive sentiment, the post's score goes down by 8. 
 
 ```{r getting-r2}
-r2 <- glance(best_model) %>%
-  pull(adj.r.squared)
+r_squared1 <- glance(best_model) %>%
+  pull(r.squared)
 ```
 
-We find an R^2^ value of `r2`, which means that the model can only explain `r r2 * 100`% of the variance of the post scores. However, this may not be too surprising, since the scores definitely do not follow a multivariate linear model. Nor do any of the predictor variables include much information about the content of the post itself, since the text is not included in the model at all. We think that including the actual text information may help us improve our model. To do this, we need to encode the title's text into numeric variables, where each unique word has its own column. The package `tm` lets us convert our tidy create such a representation, also called document-term matrix. Note that the string in each row represents the unique ID of each post. Here is a small slice of the resulting sparse matrix.
+We find an R^2^ value of `r r_squared1`, which means that the model can only explain `r r_squared1 * 100`% of the variance of the post scores. However, this may not be too surprising, since the scores definitely do not follow a multivariate linear model. Nor do any of the predictor variables include much information about the content of the post itself, since the text is not included in the model at all. We think that including the actual text information may help us improve our model. To do this, we need to encode the title's text into numeric variables, where each unique word has its own column. The package `tm` lets us convert our tidy create such a representation, also called document-term matrix. Note that the string in each row represents the unique ID of each post.
 
 ```{r tdm}
-dtm <- tidy_posts %>%
+posts <- tidy_posts %>%
+  anti_join(stop_words, by = "word") %>%
   mutate(value = 1) %>%
-  cast_dtm(id, word, value, weighting = "weightBin")
-inspect(dtm[1:5, 1:5])
+  cast_dtm(id, word, value, weighting = weightTfIdf) %>%
+  removeSparseTerms(0.995) %>%
+  as.matrix() %>%
+  as.data.frame() %>%
+  rownames_to_column(var = "id") %>%
+  inner_join(posts, ., by = "id", suffix = c("", ".word"))
 ```
 
-The full matrix has 999,153 rows and 362,975 variables.
+Now, we have a total of `r ncol(posts)` variables in the dataframe, where the new ones represents the tf-idf weight of a unique word in the title of the post. Note that we had to eliminate many of the terms in order for it to fit into memory. We did this using the `removeSparseTerms` function from `tm`, which removes terms from the matrix until it has a percentage of elements which are zero that is at least 99.5%. Let's again build a linear model using backwords selection and see whether the new variables improve the results.
+
+```{r lm-text}
+posts <- select(posts, -one_of("created_utc", "subreddit", "author", "domain", "url", "ups", "downs", "title", "selftext", "saved", "id", "from_kind", "from", "retrieved_on", "over_18", "thumbnail", "subreddit_id", "hide_score", "link_flair_css_class", "author_flair_css_class", "archived", "is_self", "from_id", "permalink", "name", "author_flair_text", "quarantine", "link_flair_text", "distinguished", "animal"))
+full_model2 <- lm(score ~ ., data = posts)
+best_model2 <- step(full_model2, direction = "forward")
+r_squared2 <- glance(best_model2) %>%
+  pull(r.squared)
+```
+
+We find that the resulting R^2^ is `r r_squared2`, which is not much better than the previous model. It appears that adding the new variables has not helped much. However, maybe a linear model is simply not the right choice.
+
+## Discussion
 
 ## Conclusion
 
