@@ -466,13 +466,16 @@ r2 <- glance(best_model) %>%
   pull(adj.r.squared)
 ```
 
-We find an R^2^ value of `r2`, which means that the model can only explain `r r2 * 100`% of the variance of the post scores. However, this may not be too surprising, since the scores definitely do not follow a multivariate linear model. Nor do any of the predictor variables include much information about the content of the post itself, since the text is not included in the model at all. We think that including the actual text information may help us improve our model. To do this, we need to encode the title's text into numeric variables, where each unique word has its own column. The package `tm` lets us convert our tidy create such a representation, also called document-term matrix.
+We find an R^2^ value of `r2`, which means that the model can only explain `r r2 * 100`% of the variance of the post scores. However, this may not be too surprising, since the scores definitely do not follow a multivariate linear model. Nor do any of the predictor variables include much information about the content of the post itself, since the text is not included in the model at all. We think that including the actual text information may help us improve our model. To do this, we need to encode the title's text into numeric variables, where each unique word has its own column. The package `tm` lets us convert our tidy create such a representation, also called document-term matrix. Note that the string in each row represents the unique ID of each post. Here is a small slice of the resulting sparse matrix.
 
-```{r }
-
+```{r tdm}
+dtm <- tidy_posts %>%
+  mutate(value = 1) %>%
+  cast_dtm(id, word, value, weighting = "weightBin")
+inspect(dtm[1:5, 1:5])
 ```
 
-TODO: Discuss results
+The full matrix has 999,153 rows and 362,975 variables.
 
 ## Conclusion
 
