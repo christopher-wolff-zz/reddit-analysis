@@ -90,7 +90,7 @@ tidy_titles <- tidy_titles %>%
 # Plot results
 ggplot(tidy_titles, aes(x = order, y = n, fill = subreddit)) +
   geom_col(show.legend = FALSE) +
-  facet_wrap(~subreddit, scales = "free") +
+  facet_wrap(~ subreddit, scales = "free") +
   labs(
     title = "Most frequent words within popular subreddits",
     subtitle = "in December 2017",
@@ -127,7 +127,7 @@ posts <- posts %>%
   left_join(posts, ., by = "id") %>%
   mutate(sentiment = case_when(
     is.na(sentiment) ~ 0,
-    TRUE             ~ as.double(sentiment)
+    TRUE ~ as.double(sentiment)
   ))
 # Find most positive title
 most_pos_post <- posts %>%
@@ -245,8 +245,8 @@ We find that in our sample, negative posts have an average score which is `r dif
 null_dist <- posts %>%
   filter(sent_class %in% c("pos", "neg")) %>%
   specify(score ~ sent_class) %>%
-  hypothesize(null = "independence") %>% 
-  generate(reps = 1000, type = "permute") %>% 
+  hypothesize(null = "independence") %>%
+  generate(reps = 1000, type = "permute") %>%
   calculate(stat = "diff in means", order = c("neg", "pos"))
 ```
 
@@ -343,8 +343,8 @@ We find that, in our sample, posts that mention dogs have an average score which
 null_dist2 <- posts %>%
   filter(animal %in% c("dog", "cat")) %>%
   specify(score ~ animal) %>%
-  hypothesize(null = "independence") %>% 
-  generate(reps = 1000, type = "permute") %>% 
+  hypothesize(null = "independence") %>%
+  generate(reps = 1000, type = "permute") %>%
   calculate(stat = "diff in means", order = c("dog", "cat"))
 ```
 
@@ -454,7 +454,7 @@ Our first approach will be a linear model, optimized using backward selection by
 
 ```{r lm-score, message=FALSE}
 full_model <- lm(score ~ uptime + title_length + gilded + stickied + num_comments + sent_class + animal + sub_, data = posts)
-best_model <- step(full_model, scope = . ~ . ^ 2, direction = "backward")
+best_model <- step(full_model, scope = . ~ .^2, direction = "backward")
 ```
 
 ```{r tidy-lm}
