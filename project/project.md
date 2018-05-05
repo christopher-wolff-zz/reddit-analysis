@@ -3,9 +3,6 @@ What makes a popular Reddit post?
 InterstellR
 May 2, 2018
 
-Load packages and data
-----------------------
-
 Introduction
 ------------
 
@@ -83,17 +80,71 @@ The resulting null distribution of the differences in means in shown below.
 
 ![](project_files/figure-markdown_github/plot-null-dist-1.png)
 
-Using a one-sided hypothesis test, we find a p-value of 0. Using a significance level of 5%, we can infer that since our p-value is less than the significance level, we can reject the null hypothesis and conclude that negative posts do indeed have a higher average mean score than positive posts.
+Using a one-sided hypothesis test, we find a p-value of 0. Using a significance level of 5%, we can infer that since our p-value is less than the significance level, we can reject the null hypothesis and conclude that *negative posts do indeed have a higher average mean score than positive posts*.
 
 Cats vs. Dogs
 -------------
 
-TODO: Hypothesis test whether dogs or cats are more popular
+A hotly debated question is whether dogs or cats are more popular. We aim to once and for all determine which one is the better animal, using a hypothesis test. Our hypothesis is that the mean score of a post depends on whether the post mentions dogs or cats. We only look at posts which mention either of the two, but not both. First, we need to create two new variables called `dog` and `cat` in order to determine whether a title contains the word "cat" or "dog", repectively.
+
+We observe that 0.25% of the posts mention dogs and 0.19% of the posts mention cats.
+
+Next, we are going to conduct a hypothesis test to determine whether score of a post is independent of whether its title contains "cat" or "dog". We will follow a similar procedure as for the previous test. The null hypothesis and the alternative hypothesis are as follows.
+
+H0: A post's score is independent of whether dogs or cats are mentioned in the title.
+HA: Dog posts have a higher mean score than cat posts.
+
+For the same reasons mentioned in the previous test, we can safely conduct simlation based inference here as well. First, we calculate the observed difference in mean score between posts with negative and positive `sent_class`.
+
+We find that, in our sample, posts that mention dogs have an average score which is 73.18 higher than those that mention cats. Next, let's figure out whether this difference could be due to chance using bootstrapping with permutation.
+
+The resulting null distribution of the differences in means in shown below.
+
+![](project_files/figure-markdown_github/plot-null-dist2-1.png)
+
+We can clearly see that we have a p-value of 0.14. This means that we can reject the null hypothesis and conclude that *dog posts indeed have a higher mean score than cat posts*.
 
 Modeling Popularity
 -------------------
 
-TODO: Density plot and summary statistics for popularity TODO: Build linear and bayesian model and compare results
+Our main resarch goal is to find out what makes a post popular. Hence, we want to build a model that can predict the score of a given post from several of its attributes. Before doing so, we visualize and summarize the distribution of the posts' scores. We will also exclude scores higher than the 90th percentile in the visualization because these posts are scores far greater than most others, making it difficult to visualize the distribution.
+
+![](project_files/figure-markdown_github/score-dist-1.png)
+
+Note that since we exclude posts above the 90th percentile, we could expect this distribution to continue with a similar trend further towards the right.
+
+    ## Start:  AIC=1.4e+07
+    ## score ~ gilded + num_comments + stickied + timeup + sent_class
+    ## 
+    ##                Df Sum of Sq      RSS      AIC
+    ## - timeup        1  3.20e+05 8.76e+11 13619500
+    ## <none>                      8.76e+11 13619502
+    ## - sent_class    2  7.50e+06 8.76e+11 13619506
+    ## - stickied      1  2.43e+07 8.76e+11 13619528
+    ## - gilded        1  2.03e+10 8.96e+11 13642346
+    ## - num_comments  1  1.44e+11 1.02e+12 13771223
+    ## 
+    ## Step:  AIC=1.4e+07
+    ## score ~ gilded + num_comments + stickied + sent_class
+    ## 
+    ##                Df Sum of Sq      RSS      AIC
+    ## <none>                      8.76e+11 13619500
+    ## - sent_class    2  7.52e+06 8.76e+11 13619505
+    ## - stickied      1  2.44e+07 8.76e+11 13619526
+    ## - gilded        1  2.03e+10 8.96e+11 13642344
+    ## - num_comments  1  1.44e+11 1.02e+12 13771222
+
+    ##                term estimate
+    ## 1       (Intercept)     32.0
+    ## 2            gilded   4622.4
+    ## 3      num_comments      3.9
+    ## 4      stickiedtrue   -144.3
+    ## 5 sent_classneutral     -6.7
+    ## 6     sent_classpos     -8.0
+
+Looking at the slope coeffiecents for our selected model's variables of `gilded`, `num_comments`, `stickied`, and `sent_class`, we can analyze the following. For every one gilded point a Reddit post receives, the score goes up by 4,622.4, given that all other variables remain constant. This makes sense since user really must like a post if they're willing to pay a gold donation to the creator. For every one comment the Reddit post recieves, the score goes by 3.9, given that all other variables remain constant. For when a post gets stickied by the moderators of the subreddits, the score goes down by 144.3, given that all other variables remain constant. This is an interesting analysis because we would expect a post that gets attention from the moderators and gets placed at the top of the feed would recieve a higher score but apparently that is not the case. Lastly, when a post's title is of neutral sentiment,
+
+    ## [1] 0.17
 
 Discussion
 ----------

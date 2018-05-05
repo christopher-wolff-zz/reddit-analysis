@@ -377,26 +377,24 @@ clean_posts <- filter(
   !is.na(gilded),
   !is.na(stickied),
   !is.na(num_comments),
-  !is.na(sent_score),
+  !is.na(sent_class),
   hide_score == "false"
 )
 ```
 
 ```{r lm-popularity}
-full_model <- lm(score ~ gilded + num_comments + stickied +timeup + sent_class, data = clean_posts)
-
-selected_model <- step(full_model, scope = . ~ .^2, direction = "backward")
+full_model <- lm(score ~ gilded + num_comments + stickied + timeup + sent_class, data = clean_posts)
+best_model <- step(full_model, scope = . ~ .^2, direction = "backward")
 ```
 
 ```{r tidy-lm}
-tidy(selected_model) %>% select(term, estimate)
+tidy(best_model) %>% select(term, estimate)
 ```
 
-Looking at the slope coeffiecents for our selected model's variables of `gilded`, `num_comments`, `stickied`, and `sent_class`, we can analyze the following. For every one gilded point a Reddit post receives, the score goes up by 4,622.4, given that all other variables remain constant. This makes sense since user really must like a post if they're willing to pay a gold donation to the creator. For every one comment the Reddit post recieves, the score goes by 3.9, given that all other variables remain constant. For when a post gets stickied by the moderators of the subreddits, the score goes down by 144.3, given that all other variables remain constant. This is an interesting analysis because we would expect a post that gets attention from the moderators and gets placed at the top of the feed would recieve a higher score but apparently that is not the case. Lastly, when a post's title is of neutral sentiment, 
-
+Looking at the slope coeffiecents for our selected model's variables of `gilded`, `num_comments`, `stickied`, and `sent_class`, we can analyze the following. For every one gilded point a Reddit post receives, the score goes up by 4,622.4, given that all other variables remain constant. This makes sense since user really must like a post if they're willing to pay a gold donation to the creator. For every one comment the Reddit post recieves, the score goes by 3.9, given that all other variables remain constant. For when a post gets stickied by the moderators of the subreddits, the score goes down by 144.3, given that all other variables remain constant. This is an interesting analysis because we would expect a post that gets attention from the moderators and gets placed at the top of the feed would recieve a higher score but apparently that is not the case. Lastly, when a post's title is of neutral sentiment,
 
 ```{r getting-r2}
-(selectedmodel_r2 <- glance(selected_model) %>%
+(r2 <- glance(best_model) %>%
   pull(adj.r.squared))
 ```
 
